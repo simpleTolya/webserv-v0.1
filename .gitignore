@@ -1,0 +1,6 @@
+/CMakeFiles/*
+/build/*
+*.cmake
+CMakeCache.txt
+Makefile
+TODO
