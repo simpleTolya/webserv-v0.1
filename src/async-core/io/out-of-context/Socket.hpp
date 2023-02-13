@@ -12,6 +12,8 @@ class Socket {
 
     constexpr static int BUF_SIZE = 4096; 
 public:
+    using Error = ft::io::Error;
+
     explicit Socket(int fd, EventLoop *event_loop) : 
         fd(fd), event_loop(event_loop) {}
     Socket(const Socket &) = delete;
@@ -20,16 +22,27 @@ public:
         fd = other.fd;
         other.fd = 0;
     }
+
     ~Socket() {
-        if (fd != 0)
-            close(fd);
+        close();
     }
 
-    Result<Void> read_all(Data &buf);
+    void close() {
+        if (fd != 0) {
+            ::close(fd);
+            fd = 0;
+        }
+    }
 
-    inline Result<Data> read_all() {
+    int freopen(int fd) {
+        return dup2(this->fd, fd);
+    }
+
+    Result<Void> read_vec(Data &buf);
+
+    inline Result<Data> read_vec() {
         Data data;
-        auto v = read_all(data);
+        auto v = read_vec(data);
         return v.map([data=std::move(data)](Void _){return data;});
     }
 

@@ -24,7 +24,7 @@ public:
 
     explicit Res(E err) : _res(std::move(err)),
         _is_ok(false) {}
-
+    
     bool is_ok() const noexcept {
         return _is_ok;
     }

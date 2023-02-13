@@ -13,14 +13,15 @@ io::State HttpRequestParser::operator()
         auto start_it = next_part.begin();
         while (true) {
             auto line_end_it = std::find(start_it, next_part.end(), '\n');
-            if (*(line_end_it - 1) == '\r')
-                --line_end_it;
 
             if (line_end_it == next_part.end()) {
                 not_handled_data.insert(not_handled_data.end(),
                                     start_it, next_part.end());
                 return io::State::PENDING;
             }
+
+            if (*(line_end_it - 1) == '\r')
+                --line_end_it;
 
             std::string header_line;
             if (not not_handled_data.empty()) {
@@ -33,7 +34,7 @@ io::State HttpRequestParser::operator()
                 header_line.push_back(static_cast<char>(*start_it));
             }
             ++start_it; // skip \r
-            if (*start_it == '\n')
+            if (start_it != next_part.end() && *start_it == '\n')
                 ++start_it;
 
             if (header_line.empty()) {

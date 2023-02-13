@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     
     EventLoop event_loop;
 
-    auto res = std::move(TCPAcceptor::local_with_port(8089));
+    auto res = std::move(TCPAcceptor::local_with_port(8089, &event_loop));
     if (res.is_err()) {
         std::cerr << "Acceptor failed" << std::endl;
         std::cerr << ft::io::error_description(res.get_err()) << std::endl;
@@ -32,9 +32,9 @@ int main(int argc, char *argv[]) {
 }
 
 // callback hell
-void do_accept(std::shared_ptr<TCPAcceptor> acceptor, EventLoop* event_loop, IExecutor *executor) {
+void do_accept(std::shared_ptr<TCPAcceptor> acceptor, IExecutor *executor) {
     acceptor->when_acceptable(
-        [acceptor, event_loop, executor](Event::EventType ev) {
+        [acceptor, executor](Event::EventType ev) {
             auto res = acceptor->accept_conn();
             if (res.is_err()) {
                 std::cerr << "Accept failed" << std::endl;
@@ -45,12 +45,12 @@ void do_accept(std::shared_ptr<TCPAcceptor> acceptor, EventLoop* event_loop, IEx
             Socket sock = std::move(res.get_val());
             auto shrd_sock = std::make_shared<Socket>(std::move(sock));
             shrd_sock->when_readable(
-                [shrd_sock, event_loop, executor](Event::EventType ev) mutable {
+                [shrd_sock, executor](Event::EventType ev) mutable {
                     if (ev != Event::TO_READ) {
                         std::cerr << " Some other" << std::endl;
                     }
 
-                    auto res = shrd_sock->read_all();
+                    auto res = shrd_sock->read_vec();
                     if (res.is_err()) {
                         std::cerr << "read_all failed" << std::endl;
                         std::cerr << ft::io::error_description(res.get_err()) << std::endl;
@@ -72,18 +72,15 @@ void do_accept(std::shared_ptr<TCPAcceptor> acceptor, EventLoop* event_loop, IEx
                                 return;
                             }
                         },
-                        event_loop,
                         executor
                     );
                 },
 
-                event_loop,
                 executor
             );
             
-            do_accept(acceptor, event_loop, executor);
+            do_accept(acceptor, executor);
         },
-        event_loop,
         executor
     );
 }

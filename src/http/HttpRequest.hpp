@@ -6,13 +6,9 @@
 # include <vector>
 # include "error/Result.hpp"
 
-struct HttpRequestParser;
-
 namespace ft::http {
 
 struct HttpRequest {
-    friend HttpRequestParser;
-
     std::string method;
     std::string path;
     std::string http_version;

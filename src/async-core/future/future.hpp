@@ -64,6 +64,7 @@ public:
         _st->set_callback(std::move(callback));
     }
 
+    // TODO: rewrite with concept
     // Get Fn(T) -> U and return Future<U>
     template <typename F, typename R =
             decltype(std::declval<F>()(std::declval<T>()))>
@@ -75,9 +76,10 @@ public:
                     func=std::move(func)](auto val) mutable {
             promise.set(std::move(func(std::move(val))));
         });
-        return std::move(future);
+        return future;
     }
 
+    // TODO: rewrite with concept
     // Get Fn(T) -> Future<U> and return Future<U>
     template <typename F, typename R = typename 
             decltype(std::declval<F>()(std::declval<T>()))::ValueType>
@@ -95,7 +97,7 @@ public:
                 promise.set(std::move(val2));
             });
         });
-        return std::move(future);
+        return future;
     }
 };
 
@@ -167,7 +169,7 @@ Future<std::vector<V>>
         }
     );
 
-    return std::move(future);
+    return future;
 }
 
 template <typename InputIterator, 
@@ -185,7 +187,7 @@ Future<V> fastest(InputIterator it, InputIterator end) {
             }
         );
     }
-    return std::move(future);
+    return future;
 }
 
 

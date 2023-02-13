@@ -14,7 +14,7 @@ int main(int argc, char const* argv[])
     struct sockaddr_in servAddr;
   
     servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(8089);
+    servAddr.sin_port = htons(8080);
     servAddr.sin_addr.s_addr = INADDR_ANY;
   
     int connectStatus

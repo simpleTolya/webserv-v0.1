@@ -9,14 +9,13 @@ namespace ft::http {
 
 class HttpServer {
     ft::io::FutTCPAcceptor acceptor;
-    ft::io::Context ctx;
 
-    HttpServer(ft::io::FutTCPAcceptor acceptor, ft::io::Context ctx) :
-        acceptor(acceptor), ctx(ctx) {}
+    HttpServer(ft::io::FutTCPAcceptor acceptor) :
+        acceptor(acceptor) {}
 public:
-    static io::Result<HttpServer>   create(int port, io::Context ctx);
+    static io::Result<HttpServer>   create(int port, io::EventLoop *);
 
-    Future<io::Result<HttpConnection>> get_conn();
+    Future<io::Result<HttpConnection>> get_conn(IExecutor *e);
 };
 
 

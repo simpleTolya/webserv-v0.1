@@ -29,16 +29,21 @@ set(FT_ASYNC_CORE_SOURCES
         src/async-core/io/out-of-context/low-lewel/poll_based_l.hpp
         src/async-core/io/out-of-context/low-lewel/select_based_l.hpp
         src/async-core/io/out-of-context/EventListener.hpp
+        src/async-core/io/out-of-context/ioConcepts.hpp
         src/async-core/io/out-of-context/EventLoop.hpp
         src/async-core/io/out-of-context/EventLoop.cpp
         src/async-core/io/out-of-context/Socket.hpp
         src/async-core/io/out-of-context/Socket.cpp
+        src/async-core/io/out-of-context/Pipe.hpp
+        src/async-core/io/out-of-context/Pipe.cpp
         src/async-core/io/out-of-context/TCPAcceptor.hpp
         src/async-core/io/out-of-context/TCPAcceptor.cpp
         src/async-core/io/error/Result.hpp
         src/async-core/io/error/Result.cpp
         src/async-core/io/Context.hpp
-        src/async-core/io/FutSocket.cpp
+        src/async-core/io/EntityCreator.hpp
+        src/async-core/io/FutRead.hpp
+        src/async-core/io/FutWrite.hpp
         src/async-core/io/FutSocket.hpp
         src/async-core/io/FutTCPAcceptor.cpp
         src/async-core/io/FutTCPAcceptor.hpp
@@ -55,19 +60,29 @@ set(FT_HTTP_SOURCES
         src/http/error/Result.hpp
         src/http/error/Result.cpp
         
-        src/http/HttpConnection.cpp
+        src/http/cgi/Cgi.cpp
+        src/http/cgi/Cgi.hpp
+
+        src/http/parsers/HttpRequestParser.cpp
+        src/http/parsers/HttpRequestParser.hpp
+        src/http/parsers/HttpResponseParser.cpp
+        src/http/parsers/HttpResponseParser.hpp
+
+        src/http/writers/HttpRequestWriter.cpp
+        src/http/writers/HttpRequestWriter.hpp
+        src/http/writers/HttpResponseWriter.cpp
+        src/http/writers/HttpResponseWriter.hpp
+
         src/http/HttpConnection.hpp
         src/http/HttpResponse.hpp
         src/http/HttpRequest.hpp
-        src/http/HttpRequestParser.cpp
-        src/http/HttpRequestParser.hpp
         src/http/HttpServer.hpp
         src/http/HttpServer.cpp)
 
 set(SERVER_SOURCES
         src/main.cpp)
 
-set_source_files_properties(${SERVER_SOURCES} PROPERTIES COMPILE_FLAGS "-Wall -pedantic-errors")
+set_source_files_properties(${SERVER_SOURCES} PROPERTIES COMPILE_FLAGS "-Wall -pedantic-errors -fconcepts-diagnostics-depth=2")
 
 
 # Coverage testing

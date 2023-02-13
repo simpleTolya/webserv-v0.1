@@ -1,5 +1,5 @@
 #ifndef FT_STREAM_WRAPPER_HPP
-# define FT_STREAM_WRAPPET_HPP
+# define FT_STREAM_WRAPPER_HPP
 
 # include <mutex>
 # include <sstream>
@@ -37,4 +37,4 @@ public:
 
 } // namespace ft
 
-#endif // FT_STREAM_WRAPPET_HPP
+#endif // FT_STREAM_WRAPPER_HPP

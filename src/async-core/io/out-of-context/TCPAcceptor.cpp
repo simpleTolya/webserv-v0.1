@@ -2,7 +2,8 @@
 
 namespace ft::io {
 
-Result<TCPAcceptor> TCPAcceptor::local_with_port(int port) {
+Result<TCPAcceptor> TCPAcceptor::local_with_port(
+                    int port, EventLoop *event_loop) {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd == -1) {
@@ -15,16 +16,16 @@ Result<TCPAcceptor> TCPAcceptor::local_with_port(int port) {
     servaddr.sin_port = htons(port);
 
     if (bind(sockfd, (sockaddr*) &servaddr, sizeof(servaddr)) == -1) {
-        close(sockfd);
+        ::close(sockfd);
         return Result<TCPAcceptor>(from_errno(errno));
     }
 
     if (listen(sockfd, LISTEN_BACKLOG) == -1) {
-        close(sockfd);
+        ::close(sockfd);
         return Result<TCPAcceptor>(from_errno(errno));
     }
 
-    return Result<TCPAcceptor>(TCPAcceptor(sockfd));
+    return Result<TCPAcceptor>(TCPAcceptor(sockfd, event_loop));
 }
 
 } // namespace ft::io

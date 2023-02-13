@@ -10,20 +10,30 @@ namespace ft::io {
 
 class TCPAcceptor {
     int fd;
-
+    EventLoop *event_loop;
 public:
-    static Result<TCPAcceptor> local_with_port(int port);
+    using Error = ft::io::Error;
+    static Result<TCPAcceptor> local_with_port(
+                    int port, EventLoop *event_loop);
 
-    explicit TCPAcceptor(int fd) : fd(fd) {}
+    explicit TCPAcceptor(int fd, EventLoop *event_loop) : 
+        fd(fd), event_loop(event_loop) {}
     TCPAcceptor(const TCPAcceptor &) = delete;
     TCPAcceptor(TCPAcceptor &&other) {
+        event_loop = other.event_loop;
         fd = other.fd;
         other.fd = 0;
     }
 
     ~TCPAcceptor() {
-        if (fd != 0)
-            close(fd);
+        close();
+    }
+
+    void close() {
+        if (fd != 0) {
+            ::close(fd);
+            fd = 0;
+        }
     }
 
     inline Result<Socket> accept_conn() {
@@ -31,12 +41,10 @@ public:
         if (conn_fd == -1) {
             return Result<Socket>(from_errno(errno));
         }
-        return Result<Socket>(Socket(conn_fd));
+        return Result<Socket>(Socket(conn_fd, event_loop));
     }
 
-    inline void when_acceptable(Handler callback, 
-            EventLoop *event_loop, IExecutor * executor) {
-        
+    inline void when_acceptable(Handler callback, IExecutor * executor) {
         event_loop->add_handler_for_event(
             Event(fd, Event::TO_ACCEPT),
             std::move(callback),

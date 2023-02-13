@@ -2,7 +2,7 @@
 
 namespace ft::io {
 
-Future<Result<Socket>> FutTCPAcceptor::accept_conn() {
+Future<Result<Socket>> FutTCPAcceptor::accept_conn(IExecutor *executor) {
     using _Result = Result<Socket>;
 
     auto [future, promise] = ft::futures::make_contract<_Result>();
@@ -11,21 +11,25 @@ Future<Result<Socket>> FutTCPAcceptor::accept_conn() {
         promise=std::move(promise)]
             (Event::EventType ev) mutable {
         
-            if (ev == Event::CLOSED)
+            if (ev == Event::CLOSED) {
                 promise.set(_Result(Error::CONNECTION_CLOSED));
+                return;
+            }
             
-            if (ev == Event::ERROR)
+            if (ev == Event::ERROR) {
                 promise.set(_Result(Error::UNDEFINED));
+                return;
+            }
 
             auto res = acceptor.impl->accept_conn();
 
             if (res.is_err()) {
                 promise.set(_Result(res.get_err()));
+                return;
             }
             promise.set(_Result(std::move(res.get_val())));
     },
-    ctx.event_loop,
-    ctx.executor);
+    executor);
 
     return std::move(future);
 }

@@ -19,7 +19,7 @@ Result<size_t>  Socket::write_all(const Data &data) {
 }
 
 
-Result<Void>    Socket::read_all(Data &buf) {
+Result<Void>    Socket::read_vec(Data &buf) {
     unsigned char tmp_buf[BUF_SIZE];
     while (true) {
         auto res = read_part(tmp_buf, BUF_SIZE);

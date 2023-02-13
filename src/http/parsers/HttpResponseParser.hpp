@@ -1,23 +1,22 @@
-#ifndef FT_HTTP_REQUEST_PARSER_HPP
-# define FT_HTTP_REQUEST_PARSER_HPP
+#ifndef FT_HTTP_RESPONSE_PARSER_HPP
+# define FT_HTTP_RESPONSE_PARSER_HPP
 
 # include <map>
 # include <string>
 # include <vector>
-# include "HttpRequest.hpp"
-# include "error/Result.hpp"
-# include "../async-core/util/util.hpp"
-# include "../async-core/io/EntityCreator.hpp"
+# include "../HttpResponse.hpp"
+# include "../error/Result.hpp"
+# include "../../async-core/util/util.hpp"
+# include "../../async-core/io/EntityCreator.hpp"
 
 namespace ft::http {
 
 // is io::EntityCreator
-class HttpRequestParser {
-    // http request params
-    std::string method;
-    std::string path;
+class HttpResponseParser {
+    // http response params
     std::string http_version;
-    // std::optional<std::string> first_line;
+    std::optional<HttpResponse::Status> code;
+    std::string status;
     std::map<std::string, std::string> headers;
     std::vector<u_char> body;
     
@@ -34,7 +33,7 @@ class HttpRequestParser {
 
 
     static Result<std::pair<
-            std::string, std::string>> parse_header(const std::string& line); 
+        std::string, std::string>> parse_header(const std::string& line);
 
     Result<Void> parse_first_header(const std::string &line);
 
@@ -44,15 +43,13 @@ class HttpRequestParser {
 public:
     // EntityCreator definition part
     using Error  = http::Error;
-    using Entity = HttpRequest;
+    using Entity = HttpResponse;
 
     io::State operator()(const std::vector<u_char>& next_part);
-    Result<HttpRequest> create_entity();
+    Result<HttpResponse> create_entity();
 };
 
 
 } // namespace ft::http
 
-
-
-#endif // FT_HTTP_REQUEST_PARSER_HPP
+#endif // FT_HTTP_RESPONSE_PARSER_HPP

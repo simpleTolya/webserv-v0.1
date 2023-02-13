@@ -8,29 +8,19 @@
 namespace ft::io {
 
 class FutTCPAcceptor {
-    Context ctx;
-    friend Context;
-
     std::shared_ptr<TCPAcceptor> impl;
 
-    FutTCPAcceptor(TCPAcceptor acceptor, Context ctx) {
-        this->impl = std::make_shared<TCPAcceptor>(std::move(acceptor));
-        this->ctx = ctx;
-    }
 public:
-    FutTCPAcceptor(const FutTCPAcceptor &other) =default;
-    // : ctx(ctx), impl(other.impl) {
-    // }
+    FutTCPAcceptor(TCPAcceptor acceptor) {
+        impl = std::make_shared<TCPAcceptor>(std::move(acceptor));
+    }
+    
+    std::shared_ptr<TCPAcceptor> get_impl() {
+        return impl;
+    }
 
-    Future<Result<Socket>> accept_conn();
+    Future<Result<Socket>> accept_conn(IExecutor *executor);
 };
-
-
-template <typename ...Args>
-FutTCPAcceptor   Context::mk_acceptor(Args&&... args) {
-    return FutTCPAcceptor(std::forward<Args>(args)..., *this);
-}
-
 
 } // namespace ft::io
 

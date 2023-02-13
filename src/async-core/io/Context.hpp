@@ -11,15 +11,8 @@ struct FutTCPAcceptor;
 
 // Usually one global context is used for the entire program
 struct Context {
-
     EventLoop *event_loop = nullptr;
     IExecutor *executor = nullptr;
-
-    template <typename ...Args>
-    FutSocket        mk_socket(Args&&... args);
-
-    template <typename ...Args>
-    FutTCPAcceptor   mk_acceptor(Args&&... args);
 };
 
 
