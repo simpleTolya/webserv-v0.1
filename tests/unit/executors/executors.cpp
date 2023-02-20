@@ -1,7 +1,7 @@
 #include <async-core/executors/same_thread.hpp>
 #include <async-core/executors/StaticThreadPool.hpp>
 #include <async-core/future/future.hpp>
-#include "../../simple_test_lib.hpp"
+#include <simple_test_lib.hpp>
 
 #include <iostream>
 #include <thread>

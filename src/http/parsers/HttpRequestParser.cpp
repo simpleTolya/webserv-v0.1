@@ -4,7 +4,7 @@
 
 namespace ft::http {
 
-io::State HttpRequestParser::operator()
+io::State RequestParser::operator()
                     (const std::vector<u_char>& next_part) {
     
     switch (state) {
@@ -71,7 +71,7 @@ io::State HttpRequestParser::operator()
 
 
 Result<std::pair<std::string, std::string>> 
-        HttpRequestParser::parse_header(const std::string& line) {
+        RequestParser::parse_header(const std::string& line) {
     
     using _Result = Result<std::pair<std::string, std::string>>;
     auto idx = line.find(":");
@@ -79,12 +79,12 @@ Result<std::pair<std::string, std::string>>
         return _Result(Error::HTTP_REQUEST_PARSE);
     }
     auto key = line.substr(0, idx);
-    auto val = line.substr(idx + 2); // TODO fix
+    auto val = line.substr(idx + 2);
     return _Result(std::make_pair<>(std::move(key), std::move(val)));
 }
 
 
-Result<Void>    HttpRequestParser::set_content_length() {
+Result<Void>    RequestParser::set_content_length() {
     if (content_length != std::nullopt)
         return Result<Void>({}); 
 
@@ -102,14 +102,14 @@ Result<Void>    HttpRequestParser::set_content_length() {
 }
 
 
-Result<HttpRequest>   HttpRequestParser::create_entity() {
-    using _Result = Result<HttpRequest>; 
+Result<Request>   RequestParser::create_entity() {
+    using _Result = Result<Request>; 
 
     if (_err.is_err()) {
         return _Result(_err.get_err());
     }
 
-    HttpRequest request;
+    Request request;
     request.body = std::move(this->body);
     request.headers = std::move(this->headers);
     request.method = std::move(this->method);
@@ -119,7 +119,7 @@ Result<HttpRequest>   HttpRequestParser::create_entity() {
 }
 
 
-io::State  HttpRequestParser::read_body(
+io::State  RequestParser::read_body(
                 const std::vector<u_char> &data, size_t from) {
 
     if (method == "GET")
@@ -138,7 +138,7 @@ io::State  HttpRequestParser::read_body(
 }
 
 
-Result<Void>  HttpRequestParser::parse_first_header(const std::string &s) {
+Result<Void>  RequestParser::parse_first_header(const std::string &s) {
     using _Result = Result<Void>;
 
     auto method_end = s.find(' ');

@@ -3,7 +3,7 @@
 
 namespace ft::http {
 
-io::State HttpResponseParser::operator()
+io::State ResponseParser::operator()
                     (const std::vector<u_char>& next_part) {
     
     switch (state) {
@@ -70,7 +70,7 @@ io::State HttpResponseParser::operator()
 
 
 Result<std::pair<std::string, std::string>> 
-        HttpResponseParser::parse_header(const std::string& line) {
+        ResponseParser::parse_header(const std::string& line) {
     
     using _Result = Result<std::pair<std::string, std::string>>;
     auto idx = line.find(":");
@@ -83,7 +83,7 @@ Result<std::pair<std::string, std::string>>
 }
 
 
-Result<Void>    HttpResponseParser::set_content_length() {
+Result<Void>    ResponseParser::set_content_length() {
     if (content_length != std::nullopt)
         return Result<Void>({}); 
 
@@ -101,14 +101,14 @@ Result<Void>    HttpResponseParser::set_content_length() {
 }
 
 
-Result<HttpResponse>   HttpResponseParser::create_entity() {
-    using _Result = Result<HttpResponse>; 
+Result<Response>   ResponseParser::create_entity() {
+    using _Result = Result<Response>; 
 
     if (_err.is_err()) {
         return _Result(_err.get_err());
     }
 
-    HttpResponse response;
+    Response response;
     response.body = std::move(this->body);
     response.headers = std::move(this->headers);
     response.http_version = std::move(this->http_version);
@@ -118,7 +118,7 @@ Result<HttpResponse>   HttpResponseParser::create_entity() {
 }
 
 
-io::State  HttpResponseParser::read_body(
+io::State  ResponseParser::read_body(
                 const std::vector<u_char> &data, size_t from) {
 
     set_content_length();
@@ -134,7 +134,7 @@ io::State  HttpResponseParser::read_body(
 }
 
 
-Result<Void>  HttpResponseParser::parse_first_header(const std::string &s) {
+Result<Void>  ResponseParser::parse_first_header(const std::string &s) {
     using _Result = Result<Void>;
 
     auto version_end = s.find(' ');
@@ -145,7 +145,7 @@ Result<Void>  HttpResponseParser::parse_first_header(const std::string &s) {
     auto code_end = s.find_first_of(' ', version_end + 1);
     if (code_end == std::string::npos or code_end == version_end + 1)
         return _Result(Error::HTTP_REQUEST_PARSE);
-    auto res = HttpResponse::Status::from(
+    auto res = Response::Status::from(
                 s.substr(version_end + 1, code_end - version_end - 1));
     if (res.is_err())
         return _Result(res.get_err());

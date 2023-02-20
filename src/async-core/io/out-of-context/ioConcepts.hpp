@@ -1,9 +1,8 @@
 #ifndef FT_IO_CONCEPTS_HPP
 # define FT_IO_CONCEPTS_HPP
 
-# include "../../util/Result.hpp"
-# include "../../executors/IExecutor.hpp"
-# include "EventLoop.hpp"
+# include <async-core/util/Result.hpp>
+# include "ExecutionContext.hpp"
 
 namespace ft::io {
 
@@ -25,14 +24,14 @@ concept Write =
 
 template<typename R>
 concept AsyncRead = 
-    requires(R reader, IExecutor *executor, Handler callback) {
-        reader.when_readable(callback, executor);
+    requires(R reader, Handler callback) {
+        reader.when_readable(callback);
     };
 
 template<typename W>
 concept AsyncWrite = 
-    requires(W writer, IExecutor *executor, Handler callback) {
-        writer.when_writable(callback, executor);
+    requires(W writer, Handler callback) {
+        writer.when_writable(callback);
     };
 
 } // namespace ft::io

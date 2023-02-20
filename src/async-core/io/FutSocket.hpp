@@ -2,9 +2,8 @@
 # define FT_FUT_SOCKET_HPP
 
 # include "out-of-context/Socket.hpp"
-# include "../future/future.hpp"
-# include "../util/move_only_func.hpp"
-# include "Context.hpp"
+# include <async-core/future/future.hpp>
+# include <async-core/util/move_only_func.hpp>
 # include "EntityConcepts.hpp"
 # include "out-of-context/ioConcepts.hpp"
 # include "FutRead.hpp"

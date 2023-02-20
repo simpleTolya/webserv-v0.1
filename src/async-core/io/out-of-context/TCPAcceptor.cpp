@@ -5,7 +5,7 @@
 namespace ft::io {
 
 Result<TCPAcceptor> TCPAcceptor::local_with_port(
-                    int port, EventLoop *event_loop) {
+                    int port, ExecutionContext *context) {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd == -1) {
@@ -27,7 +27,7 @@ Result<TCPAcceptor> TCPAcceptor::local_with_port(
         return Result<TCPAcceptor>(from_errno(errno));
     }
 
-    return Result<TCPAcceptor>(TCPAcceptor(sockfd, event_loop));
+    return Result<TCPAcceptor>(TCPAcceptor(sockfd, context));
 }
 
 Result<std::pair<Socket, InAddrInfo>> TCPAcceptor::accept_conn() {
@@ -46,7 +46,7 @@ Result<std::pair<Socket, InAddrInfo>> TCPAcceptor::accept_conn() {
     std::strcpy(addr_info.ip, inet_ntoa(client_addr.sin_addr)); 
     addr_info.port = ntohs(client_addr.sin_port);
 
-    return _Result(std::make_pair<>(Socket(conn_fd, event_loop), addr_info));
+    return _Result(std::make_pair<>(Socket(conn_fd, context), addr_info));
 }
 
 } // namespace ft::io

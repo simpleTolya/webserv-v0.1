@@ -1,29 +1,27 @@
-#include "async-core/ft-async-core.hpp"
-#include "http/ft-http.hpp"
-#include "config-parser/Config.hpp"
-#include "config-parser/serv-conf/ServConf.hpp"
+#include <async-core/ft-async-core.hpp>
+#include <http/ft-http.hpp>
+#include <config-parser/Config.hpp>
+#include <config-parser/serv-conf/ServConf.hpp>
 #include <fstream>
 
-ft::io::Context ctx;
 void async_main(int argc, char *argv[]);
 
+ft::io::ExecutionContext *ctx;
 int main(int argc, char *argv[]) {
 
     auto pool = ft::StaticThreadPool::create_default();
 
-    ft::IExecutor* executor = &pool; //ft::same_thread::_();
-    ft::io::EventLoop event_loop;
+    ft::IExecutor* executor = ft::same_thread::_();
+    ft::io::ExecutionContext context(executor);
 
-    ctx.event_loop = &event_loop;
-    ctx.executor = executor;
-
+    ctx = &context;
     async_main(argc, argv);
     
-    event_loop.loop();
+    context.loop();
     return 0;
 }
 
-void server_pipeline(ft::http::HttpServer server, 
+void server_pipeline(ft::http::Server server, 
                         std::shared_ptr<std::vector<ft::Config::Server>>);
 void async_main(int argc, char *argv[]) {
 
@@ -62,8 +60,7 @@ void async_main(int argc, char *argv[]) {
         }
         
         uint16_t port = std::atoi(port_str.c_str()); // check err
-        auto serv_res = ft::http::HttpServer::create(
-                                    ip, port, ctx.event_loop);
+        auto serv_res = ft::http::Server::create(ip, port, ctx);
 
         if (serv_res.is_err()) {
             std::cerr << "Server with listen: " << _listen <<
@@ -81,7 +78,7 @@ void async_main(int argc, char *argv[]) {
 }
 
 const ft::Config::Server::Location* get_location(
-                    const ft::http::HttpRequest &req,
+                    const ft::http::Request &req,
                     std::shared_ptr<std::vector<ft::Config::Server>> info) {
     const ft::Config::Server *server_ptr = nullptr;
     auto hostname_it = req.headers.find("Host");
@@ -124,12 +121,12 @@ const ft::Config::Server::Location* get_location(
     return loc_ptr;
 }
 
-ft::http::HttpResponse with_error_code(
-                    ft::http::HttpResponse::Status code);
+ft::http::Response with_error_code(
+                    ft::http::Response::Status code);
 
-void server_pipeline(ft::http::HttpServer server, 
+void server_pipeline(ft::http::Server server, 
                 std::shared_ptr<std::vector<ft::Config::Server>> info) {
-    server.get_conn(ctx.executor).on_complete([server, info](auto res) mutable {
+    server.get_conn().on_complete([server, info](auto res) mutable {
         server_pipeline(server, info);
 
         if (res.is_err()) {
@@ -140,7 +137,7 @@ void server_pipeline(ft::http::HttpServer server,
         }
 
         auto http_conn = res.get_val();
-        auto request = http_conn.get_request(ctx.executor);
+        auto request = http_conn.get_request();
         request.on_complete([http_conn, server_conf=info] (auto req_res) mutable {
             
             if (req_res.is_err()) {
@@ -153,37 +150,37 @@ void server_pipeline(ft::http::HttpServer server,
             auto loc_ptr = get_location(request, server_conf);
             if (loc_ptr == nullptr) {
                 http_conn.send_response(with_error_code(
-                    ft::http::HttpResponse::Status::from(500).get_val()), ctx.executor)
+                    ft::http::Response::Status::from(500).get_val()))
                     .on_complete([http_conn](auto _){});
                 return;
             }
 
             if (not loc_ptr->root.empty()) {
-                auto res = ft::http::HttpResponse::static_from(loc_ptr->root);
+                auto res = ft::http::Response::static_from(loc_ptr->root);
                 if (res.is_err()) {
                     http_conn.send_response(with_error_code(
-                        ft::http::HttpResponse::Status::from(500).get_val()), ctx.executor)
+                        ft::http::Response::Status::from(500).get_val()))
                         .on_complete([http_conn](auto _){});
                     return;
                 }
                 auto response = std::move(res.get_val());
-                http_conn.send_response(response, ctx.executor)
+                http_conn.send_response(response)
                         .on_complete([http_conn](auto _){});
                 return;
             }
 
             if (not loc_ptr->cgi_path.empty()) {
                 auto resp_res = ft::http::cgi::send_request(request, 
-                        loc_ptr->cgi_path, ctx.event_loop, ctx.executor);
+                        loc_ptr->cgi_path, ctx);
                 resp_res.on_complete([http_conn](auto resp_res) mutable {
                     if (resp_res.is_err()) {
                         http_conn.send_response(with_error_code(
-                            ft::http::HttpResponse::Status::from(503).get_val()), ctx.executor)
+                            ft::http::Response::Status::from(503).get_val()))
                             .on_complete([http_conn](auto _){});
                         return;
                     }
                     auto response = std::move(resp_res.get_val());
-                    http_conn.send_response(response, ctx.executor)
+                    http_conn.send_response(std::move(response))
                              .on_complete([http_conn](auto _){});
                 });
                 return;
@@ -210,25 +207,23 @@ void server_pipeline(ft::http::HttpServer server,
                 }
                 uint16_t proxy_port = std::atoi(proxy_port_str.c_str());
 
-                auto proxy_res = ft::http::HttpClient::from(
-                                    proxy_ip, proxy_port, ctx.event_loop);
+                auto proxy_res = ft::http::Client::from(
+                                    proxy_ip, proxy_port, ctx);
 
                 if (proxy_res.is_err()) {
                     http_conn.send_response(with_error_code(
-                        ft::http::HttpResponse::Status::from(502).get_val()), ctx.executor)
+                        ft::http::Response::Status::from(502).get_val()))
                         .on_complete([http_conn](auto _){});
                 } else {
                     auto proxy = std::move(proxy_res.get_val());
-                    proxy.request_response(request, ctx.executor)
+                    proxy.request_response(request)
                         .on_complete([http_conn](auto res) mutable {
                             if (res.is_err()) {
                                 http_conn.send_response(with_error_code(
-                                    ft::http::HttpResponse::Status::from(502).get_val()),
-                                        ctx.executor)
+                                    ft::http::Response::Status::from(502).get_val()))
                                     .on_complete([http_conn](auto _){});
                             } else {
-                                http_conn.send_response(std::move(res.get_val()), 
-                                        ctx.executor)
+                                http_conn.send_response(std::move(res.get_val()))
                                     .on_complete([http_conn](auto _){});
                             }
                         });
@@ -237,15 +232,15 @@ void server_pipeline(ft::http::HttpServer server,
             }
 
             http_conn.send_response(with_error_code(
-                ft::http::HttpResponse::Status::from(404).get_val()), ctx.executor)
+                ft::http::Response::Status::from(404).get_val()))
                 .on_complete([http_conn](auto _){});
         });
     });
 }
 
-ft::http::HttpResponse with_error_code(
-            ft::http::HttpResponse::Status code) {
-    ft::http::HttpResponse resp;
+ft::http::Response with_error_code(
+            ft::http::Response::Status code) {
+    ft::http::Response resp;
     resp.code = code;
     resp.http_version = "HTTP/1.1";
     resp.status = "BAD_REQUEST";

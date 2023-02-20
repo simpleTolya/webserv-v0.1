@@ -8,7 +8,7 @@
 
 namespace ft::http {
 
-struct HttpRequest {
+struct Request {
     std::string method;
     std::string path;
     std::string http_version;

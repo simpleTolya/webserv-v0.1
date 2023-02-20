@@ -1,7 +1,6 @@
 #ifndef FT_POLL_BASED_L_HPP
 # define FT_POLL_BASED_L_HPP
 
-# define USE_POLL
 
 # ifdef USE_POLL
 

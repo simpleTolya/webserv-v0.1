@@ -2,8 +2,7 @@
 # define FT_FUT_TCPACCEPTOR_HPP
 
 # include "out-of-context/TCPAcceptor.hpp"
-# include "../future/future.hpp"
-# include "Context.hpp"
+# include <async-core/future/future.hpp>
 
 namespace ft::io {
 
@@ -19,7 +18,7 @@ public:
         return impl;
     }
 
-    Future<Result<std::pair<Socket, InAddrInfo>>> accept_conn(IExecutor *executor);
+    Future<Result<std::pair<Socket, InAddrInfo>>> accept_conn();
 };
 
 } // namespace ft::io

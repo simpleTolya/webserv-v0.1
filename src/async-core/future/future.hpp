@@ -8,9 +8,10 @@
 # include <utility>
 # include <functional>
 
-# include "../util/move_only_func.hpp"
-# include "../executors/IExecutor.hpp"
-# include "../executors/same_thread.hpp"
+# include <async-core/util/move_only_func.hpp>
+# include <async-core/executors/IExecutor.hpp>
+# include <async-core/executors/same_thread.hpp>
+
 # include "detail/_promise_container.hpp"
 # include "detail/_shared_state.hpp"
 
@@ -187,6 +188,17 @@ Future<V> fastest(InputIterator it, InputIterator end) {
             }
         );
     }
+    return future;
+}
+
+// (IExecutor* e, () -> T) => Future<T>
+template <typename T>
+Future<T>  execute(::detail::unique_function<T()> task, IExecutor *e) {
+    auto [future, promise] = ft::futures::make_contract<T>();
+    e->execute([promise=std::move(promise),
+                task=std::move(task)]() mutable {
+                    promise.set(std::move(task()));
+                });
     return future;
 }
 

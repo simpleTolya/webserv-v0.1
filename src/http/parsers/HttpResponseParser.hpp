@@ -4,18 +4,18 @@
 # include <map>
 # include <string>
 # include <vector>
-# include "../HttpResponse.hpp"
-# include "../error/Result.hpp"
-# include "../../async-core/util/util.hpp"
-# include "../../async-core/io/EntityConcepts.hpp"
+# include <http/HttpResponse.hpp>
+# include <http/error/Result.hpp>
+# include <async-core/util/util.hpp>
+# include <async-core/io/EntityConcepts.hpp>
 
 namespace ft::http {
 
 // is io::EntityCreator
-class HttpResponseParser {
+class ResponseParser {
     // http response params
     std::string http_version;
-    std::optional<HttpResponse::Status> code;
+    std::optional<Response::Status> code;
     std::string status;
     std::map<std::string, std::string> headers;
     std::vector<u_char> body;
@@ -43,10 +43,10 @@ class HttpResponseParser {
 public:
     // EntityCreator definition part
     using Error  = http::Error;
-    using Entity = HttpResponse;
+    using Entity = Response;
 
     io::State operator()(const std::vector<u_char>& next_part);
-    Result<HttpResponse> create_entity();
+    Result<Response> create_entity();
 };
 
 

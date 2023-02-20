@@ -8,9 +8,9 @@
 # include <utility>
 # include <functional>
 
-# include "../../util/move_only_func.hpp"
-# include "../../executors/IExecutor.hpp"
-# include "../../executors/same_thread.hpp"
+# include <async-core/util/move_only_func.hpp>
+# include <async-core/executors/IExecutor.hpp>
+# include <async-core/executors/same_thread.hpp>
 
 namespace ft::detail {
 

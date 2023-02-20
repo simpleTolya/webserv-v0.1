@@ -1,9 +1,9 @@
 #include "HttpRequestSerializer.hpp"
-#include "../HttpRequest.hpp"
+#include <http/HttpRequest.hpp>
 
 namespace ft::http {
 
-HttpRequestSerializer::HttpRequestSerializer(HttpRequest req) {
+RequestSerializer::RequestSerializer(Request req) {
     std::vector<u_char> headers;
 
     auto back_inserter = [&headers](const char *s) {
@@ -30,11 +30,11 @@ HttpRequestSerializer::HttpRequestSerializer(HttpRequest req) {
     this->body = std::move(req.body);
 }
 
-HttpRequestSerializer HttpRequestSerializer::from(HttpRequest resp) {
-    return HttpRequestSerializer(std::move(resp));
+RequestSerializer RequestSerializer::from(Request resp) {
+    return RequestSerializer(std::move(resp));
 }
 
-io::Data HttpRequestSerializer::get_data() {
+io::Data  RequestSerializer::get_data() {
     switch (_state)
     {
     case State::HEADERS: {
@@ -52,7 +52,7 @@ io::Data HttpRequestSerializer::get_data() {
     }
 }
 
-io::State HttpRequestSerializer::state() const noexcept {
+io::State RequestSerializer::state() const noexcept {
     switch (_state)
     {
     case State::HEADERS:

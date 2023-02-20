@@ -2,8 +2,8 @@
 # define FT_IO_PIPE_HPP
 
 # include <unistd.h>
-# include "EventLoop.hpp"
-# include "../error/Result.hpp"
+# include "ExecutionContext.hpp"
+# include "async-core/io/error/Result.hpp"
 
 namespace ft::io {
 
@@ -104,10 +104,10 @@ public:
 
 class AsyncPipeSender : private PipeSender {
 // implement Write & AsyncWrite
-    EventLoop *event_loop;
+    ExecutionContext *context;
 public:
-    AsyncPipeSender(PipeSender ps, EventLoop *el) :
-        PipeSender(std::move(ps)), event_loop(el) {}
+    AsyncPipeSender(PipeSender ps, ExecutionContext *context) :
+        PipeSender(std::move(ps)), context(context) {}
 
     using Error = PipeSender::Error;
 
@@ -115,11 +115,10 @@ public:
         return PipeSender::write_part(buf, buf_size);
     }
 
-    void when_writable(Handler callback, IExecutor *executor) {
-        event_loop->add_handler_for_event(
+    void when_writable(Handler callback) {
+        context->add_handler_for_event(
             Event(get_fd(), Event::TO_WRITE),
-            std::move(callback),
-            executor
+            std::move(callback)
         );
     }
 };
@@ -127,9 +126,9 @@ public:
 
 class AsyncPipeReceiver : private PipeReceiver {
 // implement Read & AsyncRead
-    EventLoop *event_loop;
+    ExecutionContext *event_loop;
 public:
-    AsyncPipeReceiver(PipeReceiver pp, EventLoop *el) :
+    AsyncPipeReceiver(PipeReceiver pp, ExecutionContext *el) :
         PipeReceiver(std::move(pp)), event_loop(el) {}
 
     using Error = PipeSender::Error;
@@ -138,11 +137,10 @@ public:
         return PipeReceiver::read_part(buf, buf_size);
     }
 
-    void when_readable(Handler callback, IExecutor *executor) {
+    void when_readable(Handler callback) {
         event_loop->add_handler_for_event(
             Event(get_fd(), Event::TO_READ),
-            std::move(callback),
-            executor
+            std::move(callback)
         );
     }
 };

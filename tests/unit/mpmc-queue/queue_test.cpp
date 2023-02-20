@@ -1,5 +1,5 @@
 #include <async-core/mpmc-queue/mpmc_queue.hpp>
-#include "../../simple_test_lib.hpp"
+#include <simple_test_lib.hpp>
 
 #include <iostream>
 #include <thread>

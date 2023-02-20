@@ -3,7 +3,7 @@
 namespace ft::io {
 
 Future<Result<std::pair<Socket, InAddrInfo>>>
-                FutTCPAcceptor::accept_conn(IExecutor *executor) {
+                FutTCPAcceptor::accept_conn() {
     using _Result = Result<std::pair<Socket, InAddrInfo>>;
 
     auto [future, promise] = ft::futures::make_contract<_Result>();
@@ -29,8 +29,7 @@ Future<Result<std::pair<Socket, InAddrInfo>>>
                 return;
             }
             promise.set(_Result(std::move(res.get_val())));
-    },
-    executor);
+    });
 
     return std::move(future);
 }

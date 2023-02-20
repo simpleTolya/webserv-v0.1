@@ -8,12 +8,12 @@
 
 namespace ft::http {
 
-struct HttpResponse {
+struct Response {
     std::string http_version;
     class Status {
         int _val;
         explicit Status(int val) : _val(val) {}
-        friend HttpResponse;
+        friend Response;
     public:
         static Result<Status> from(int val) {
             if (val < 100 or val >= 600)
@@ -29,9 +29,9 @@ struct HttpResponse {
     std::map<std::string, std::string> headers;
     std::vector<u_char> body;
 
-    HttpResponse() : code(599) {}
+    Response() : code(599) {}
 
-    static Result<HttpResponse> static_from(const std::string &file_path);
+    static Result<Response> static_from(const std::string &file_path);
 };
 
 

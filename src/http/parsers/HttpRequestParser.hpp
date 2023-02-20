@@ -4,15 +4,15 @@
 # include <map>
 # include <string>
 # include <vector>
-# include "../HttpRequest.hpp"
-# include "../error/Result.hpp"
-# include "../../async-core/util/util.hpp"
-# include "../../async-core/io/EntityConcepts.hpp"
+# include <http/HttpRequest.hpp>
+# include <http/error/Result.hpp>
+# include <async-core/util/util.hpp>
+# include <async-core/io/EntityConcepts.hpp>
 
 namespace ft::http {
 
 // is io::EntityCreator
-class HttpRequestParser {
+class RequestParser {
     // http request params
     std::string method;
     std::string path;
@@ -43,10 +43,10 @@ class HttpRequestParser {
 public:
     // EntityCreator definition part
     using Error  = http::Error;
-    using Entity = HttpRequest;
+    using Entity = Request;
 
     io::State operator()(const std::vector<u_char>& next_part);
-    Result<HttpRequest> create_entity();
+    Result<Request> create_entity();
 };
 
 

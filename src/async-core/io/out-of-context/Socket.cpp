@@ -21,9 +21,9 @@ Result<size_t>  Socket::write_all(const Data &data) {
 
 
 Result<Void>    Socket::read_vec(Data &buf) {
-    unsigned char tmp_buf[BUF_SIZE];
+    u_char *buffer_ptr = ft::buffer;
     while (true) {
-        auto res = read_part(tmp_buf, BUF_SIZE);
+        auto res = read_part(buffer_ptr, FT_BUFFER_SIZE);
         if (res.is_err()) {
             return Result<Void>(res.get_err());
         }
@@ -35,12 +35,12 @@ Result<Void>    Socket::read_vec(Data &buf) {
         
         buf.reserve(buf.size() + byte_cnt);
         for (int i = 0; i < byte_cnt; ++i)
-            buf.emplace_back(tmp_buf[i]);
+            buf.emplace_back(buffer_ptr[i]);
     }
 }
 
 Result<Socket>  Socket::conn_tcp_serv(const char *ip, 
-                        uint16_t port, EventLoop *el) {
+                    uint16_t port, ExecutionContext *ctx) {
     using _Result = Result<Socket>;
 
     sockaddr_in servaddr = (const sockaddr_in){0};
@@ -56,7 +56,7 @@ Result<Socket>  Socket::conn_tcp_serv(const char *ip,
     if (connect(sockfd, (sockaddr*)&servaddr, sizeof(servaddr)) != 0)
         return _Result(from_errno(errno));
     
-    return _Result(Socket(sockfd, el));
+    return _Result(Socket(sockfd, ctx));
 }
 
 } // namespace ft::io

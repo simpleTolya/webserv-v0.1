@@ -2,9 +2,9 @@
 # define FT_THREAD_POOL_HPP
 
 # include <thread>
-# include "../mpmc-queue/mpmc_queue.hpp"
+# include <async-core/mpmc-queue/mpmc_queue.hpp>
 # include "IExecutor.hpp"
-# include "../util/util.hpp"
+# include <async-core/util/util.hpp>
 
 namespace ft {
 

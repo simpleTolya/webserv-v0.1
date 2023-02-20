@@ -1,6 +1,6 @@
 #include <config-parser/serv-conf/ServConf.hpp>
 #include <config-parser/Config.hpp>
-#include "../../simple_test_lib.hpp"
+#include <simple_test_lib.hpp>
 
 #include <iostream>
 #include <thread>

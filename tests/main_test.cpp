@@ -1,4 +1,4 @@
-#include "simple_test_lib.hpp"
+#include <simple_test_lib.hpp>
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {

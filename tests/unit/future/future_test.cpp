@@ -5,7 +5,7 @@
 #include <thread>
 #include <iostream>
 
-#include "../../simple_test_lib.hpp"
+#include <simple_test_lib.hpp>
 
 ft::Future<int> long_calc(int val, int milliseconds) {
     auto fut_promise = ft::futures::make_contract<int>();

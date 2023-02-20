@@ -1,6 +1,6 @@
 #include "Cgi.hpp"
-#include "../writers/HttpRequestSerializer.hpp"
-#include "../parsers/HttpResponseParser.hpp"
+#include <http/writers/HttpRequestSerializer.hpp>
+#include <http/parsers/HttpResponseParser.hpp>
 #include <cstring>
 #include <unistd.h>
 
@@ -31,7 +31,7 @@ void object::clear_env(char **env) {
 
 
 Res<object, Error> object::from(const std::string & path, 
-      const std::map<std::string, std::string>& headers, io::EventLoop *el) {
+      const std::map<std::string, std::string>& headers, io::ExecutionContext *ctx) {
     using _Result = Res<object, Error>;
     
     // the channel over which the webserver sends requests to sgi
@@ -76,47 +76,45 @@ Res<object, Error> object::from(const std::string & path,
         
         return _Result(object(
             io::FutPipeReceiver(
-                io::AsyncPipeReceiver(std::move(serv_receiver), el)),
+                io::AsyncPipeReceiver(std::move(serv_receiver), ctx)),
             io::FutPipeSender(
-                io::AsyncPipeSender(std::move(serv_sender), el))
+                io::AsyncPipeSender(std::move(serv_sender), ctx))
         ));
     }
 }
 
 
-Future<io::Result<Void>> object::send_request(
-                        HttpRequest req, IExecutor *executor) {
+Future<io::Result<Void>> object::send_request(http::Request req) {
     using _Result = io::Result<Void>;
 
     return to_cgi.write_entity(
-            HttpRequestSerializer(std::move(req)), executor)
+            http::RequestSerializer(std::move(req)))
                 .map([](auto res){
                     return res.map([](auto _){return Void{};});
                 });
 }
 
-Future<Res<HttpResponse, http::Error>> 
-                object::get_response(IExecutor *executor) {
-    return from_cgi.read_entity(HttpResponseParser(), executor);
+Future<Res<http::Response, http::Error>> object::get_response() {
+    return from_cgi.read_entity(http::ResponseParser());
 }
 
-Future<Res<HttpResponse, Error>> send_request(
-        HttpRequest req, const std::string &cgi_path, 
-        io::EventLoop *el, IExecutor *executor) {
-    using _Result = Res<HttpResponse, Error>;
-    auto res = cgi::object::from(cgi_path, req.headers, el);
+Future<Res<http::Response, Error>> send_request(
+        http::Request req, const std::string &cgi_path, 
+        io::ExecutionContext *ctx) {
+    using _Result = Res<http::Response, Error>;
+    auto res = cgi::object::from(cgi_path, req.headers, ctx);
     if (res.is_err())
         return futures::from_val(_Result(res.get_err()));
 
     cgi::object obj = std::move(res.get_val());
-    return obj.send_request(std::move(req), executor).
-            flatmap([obj, executor](auto res) mutable {
+    return obj.send_request(std::move(req)).
+            flatmap([obj](auto res) mutable {
                 if (res.is_err())
                     return futures::from_val(_Result(Error{
                         std::string("cgi::send_request ") +
                         ft::io::error_description(res.get_err())})
                     );
-                return obj.get_response(executor).map(
+                return obj.get_response().map(
                     [](auto res){
                         if (res.is_err())
                             return _Result(Error{"http error"});

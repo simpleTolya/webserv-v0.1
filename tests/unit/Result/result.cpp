@@ -1,5 +1,5 @@
 #include <async-core/util/Result.hpp>
-#include "../../simple_test_lib.hpp"
+#include <simple_test_lib.hpp>
 
 #include <iostream>
 #include <thread>

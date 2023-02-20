@@ -1,10 +1,10 @@
 #ifndef FT_HTTP_CGI_HPP
 # define FT_HTTP_CGI_HPP
 
-# include "../../async-core/io/FutPipe.hpp"
-# include "../../async-core/future/future.hpp"
-# include "../HttpRequest.hpp"
-# include "../HttpResponse.hpp"
+# include <async-core/io/FutPipe.hpp>
+# include <async-core/future/future.hpp>
+# include <http/HttpRequest.hpp>
+# include <http/HttpResponse.hpp>
 
 namespace ft::http::cgi {
 
@@ -26,15 +26,16 @@ public:
     static void clear_env(char **env);
 public:
     static Res<object, Error> from(const std::string & path, 
-        const std::map<std::string, std::string>& headers, io::EventLoop *);
+        const std::map<std::string, std::string>& headers,
+        io::ExecutionContext *);
 
-    Future<io::Result<Void>> send_request(HttpRequest, IExecutor *);
-    Future<Res<HttpResponse, http::Error>> get_response(IExecutor *);
+    Future<io::Result<Void>> send_request(http::Request);
+    Future<Res<http::Response, http::Error>> get_response();
 };
 
 
-Future<Res<HttpResponse, Error>> send_request(
-    HttpRequest, const std::string &cgi_path, io::EventLoop*, IExecutor*);
+Future<Res<http::Response, Error>> send_request(
+    http::Request, const std::string &cgi_path, io::ExecutionContext*);
 
 } // namespace ft::io::cgi
 

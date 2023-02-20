@@ -1,5 +1,5 @@
 #include <async-core/mpmc-queue/detail/forward_list.hpp>
-#include "../../simple_test_lib.hpp"
+#include <simple_test_lib.hpp>
 #include <string>
 
 TEST_CASE(forward_list) {

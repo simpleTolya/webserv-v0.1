@@ -2,13 +2,13 @@
 # define FT_HTTP_RESPONSE_SERIALIZER_HPP
 
 # include <vector>
-# include "../../async-core/io/EntityConcepts.hpp"
+# include <async-core/io/EntityConcepts.hpp>
 
 namespace ft::http {
 
-struct HttpResponse;
+struct Response;
 
-struct HttpResponseSerializer {
+struct ResponseSerializer {
 // implements concept io::EntitySerializer
 private:
     enum class State {
@@ -17,13 +17,13 @@ private:
         READY
     } _state = State::HEADERS;
 public:
-    using Entity = HttpResponse;
+    using Entity = Response;
 
     std::vector<u_char> headers;
     std::vector<u_char> body;
 
-    HttpResponseSerializer(HttpResponse);
-    static HttpResponseSerializer from(HttpResponse);
+    ResponseSerializer(Response);
+    static ResponseSerializer from(Response);
 
     io::Data get_data();
     io::State state() const noexcept;

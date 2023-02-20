@@ -4,8 +4,8 @@
 
 namespace ft::http {
 
-Result<HttpResponse> HttpResponse::static_from(const std::string &file_path) {
-    using _Result = Result<HttpResponse>;
+Result<Response> Response::static_from(const std::string &file_path) {
+    using _Result = Result<Response>;
 
     std::string content_type;
     auto pos = file_path.find_last_of('.');
@@ -25,9 +25,9 @@ Result<HttpResponse> HttpResponse::static_from(const std::string &file_path) {
         return _Result(Error::UNDEFINED); 
 
     std::vector<u_char> body(std::istreambuf_iterator<char>(file), {}); 
-    HttpResponse response;
+    Response response;
     response.body = std::move(body);
-    response.code = HttpResponse::Status::from(200).get_val();
+    response.code = Response::Status::from(200).get_val();
     response.status = "OK";
     response.http_version = "HTTP/1.1";
     response.headers["Content-Type"] = content_type;

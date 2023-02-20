@@ -1,31 +1,30 @@
 #ifndef FT_SOCKET_HPP
 # define FT_SOCKET_HPP
 
-# include "EventLoop.hpp"
-# include "../error/Result.hpp"
+# include "ExecutionContext.hpp"
+# include "async-core/io/error/Result.hpp"
 # include <unistd.h>
 
 namespace ft::io {
 
 class Socket {
     int fd;
-    EventLoop *event_loop;
+    ExecutionContext *context;
 
-    constexpr static int BUF_SIZE = 4096; 
 public:
     using Error = ft::io::Error;
 
-    explicit Socket(int fd, EventLoop *event_loop) : 
-        fd(fd), event_loop(event_loop) {}
+    explicit Socket(int fd, ExecutionContext *context) : 
+        fd(fd), context(context) {}
     Socket(const Socket &) = delete;
     Socket(Socket && other) {
-        event_loop = other.event_loop;
+        context = other.context;
         fd = other.fd;
         other.fd = 0;
     }
 
     static Result<Socket> conn_tcp_serv(const char *ip,
-                                uint16_t port, EventLoop *);
+                        uint16_t port, ExecutionContext *);
 
     ~Socket() {
         close();
@@ -76,19 +75,17 @@ public:
         return Result<size_t>(cnt);
     }
 
-    inline void when_readable(Handler callback, IExecutor * executor) {
-        event_loop->add_handler_for_event(
+    inline void when_readable(Handler callback) {
+        context->add_handler_for_event(
             Event(fd, Event::TO_READ),
-            std::move(callback),
-            executor
+            std::move(callback)
         );
     }
 
-    inline void when_writable(Handler callback, IExecutor * executor) {
-        event_loop->add_handler_for_event(
+    inline void when_writable(Handler callback) {
+        context->add_handler_for_event(
             Event(fd, Event::TO_WRITE),
-            std::move(callback),
-            executor
+            std::move(callback)
         );
     }
 };

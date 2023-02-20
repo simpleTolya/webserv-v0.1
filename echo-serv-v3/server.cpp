@@ -9,28 +9,26 @@ using namespace ft;
 using namespace io;
 
 // Global context for Fut* objs
-Context ctx;
-
-void async_main();
-
+ft::io::ExecutionContext *ctx;
+void async_main(int argc, char *argv[]);
 int main(int argc, char *argv[]) {
 
-    auto executor = std::move(StaticThreadPool::create_default());
-    EventLoop event_loop;
+    auto pool = ft::StaticThreadPool::create_default();
 
-    ctx.event_loop = &event_loop;
-    ctx.executor =  ft::same_thread::_();
+    ft::IExecutor* executor = &pool; //ft::same_thread::_();
+    ft::io::ExecutionContext context(executor);
 
-    async_main();
-
-    event_loop.loop();
+    ctx = &context;
+    async_main(argc, argv);
+    
+    context.loop();
     return 0;
 }
 
 Future<Void> pipeline_acceptor(FutTCPAcceptor acceptor);
-void async_main() {
+void async_main(int argc, char *argv[]) {
 
-    auto res = std::move(TCPAcceptor::local_with_port(8089, ctx.event_loop));   
+    auto res = std::move(TCPAcceptor::local_with_port(8089, ctx));   
     if (res.is_err()) {
         std::cerr << "Acceptor failed" << std::endl;
         std::cerr << ft::io::error_description(res.get_err()) << std::endl;
@@ -44,7 +42,7 @@ void async_main() {
 Future<Void> pipeline_acceptor(FutTCPAcceptor acceptor) {
     while (true) {
 
-        auto res = co_await acceptor.accept_conn(ctx.executor);
+        auto res = co_await acceptor.accept_conn();
         
         if (res.is_err()) {
             std::cerr << "accept_conn failed" << std::endl;
@@ -53,7 +51,7 @@ Future<Void> pipeline_acceptor(FutTCPAcceptor acceptor) {
 
         auto [__sock, _] = std::move(res.get_val());
         auto fut_sock = ft::io::FutSocket(std::move(__sock));
-        auto data_res = co_await fut_sock.read_part(ctx.executor);
+        auto data_res = co_await fut_sock.read_part();
         
         if (data_res.is_err()) {
             std::cerr << "read failed" << std::endl;
@@ -61,7 +59,7 @@ Future<Void> pipeline_acceptor(FutTCPAcceptor acceptor) {
         }
 
         auto data = std::move(data_res.get_val());
-        auto writed_res = co_await fut_sock.write_all(ctx.executor, std::move(data));
+        auto writed_res = co_await fut_sock.write_all(std::move(data));
         if (writed_res.is_err()) {
             std::cerr << "write failed" << std::endl;
             continue;

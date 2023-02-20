@@ -2,7 +2,6 @@
 # define FT_SAME_THREAD_HPP
 
 # include <thread>
-# include "../mpmc-queue/mpmc_queue.hpp"
 # include "IExecutor.hpp"
 
 namespace ft {

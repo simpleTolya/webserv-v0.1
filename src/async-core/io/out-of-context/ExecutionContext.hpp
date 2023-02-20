@@ -2,9 +2,9 @@
 # define FT_EVENT_HANDLER_HPP
 
 # include "EventListener.hpp"
-# include "../../executors/IExecutor.hpp"
-# include "../../util/move_only_func.hpp"
-# include "../../util/util.hpp"
+# include <async-core/executors/IExecutor.hpp>
+# include <async-core/util/move_only_func.hpp>
+# include <async-core/util/util.hpp>
 
 # include <unordered_map>
 # include <optional>
@@ -18,26 +18,23 @@ class TCPAcceptor;
 using Data    = std::vector<unsigned char>;
 using Handler = ::detail::unique_function<void(Event::EventType)>;
 
-class EventLoop {
+class ExecutionContext {
 
     class CallbackStorage {
         using fd = int;
 
-        std::unordered_map<fd, 
-            std::pair<Handler, IExecutor *> > handlers;
+        std::unordered_map<fd, Handler> handlers;
     public:
 
-        void set_handler(Event ev, 
-                Handler callback, IExecutor *executor) {
-            handlers[ev.fd()] = std::make_pair<>(
-                std::move(callback), executor
-            );
+        void set_handler(Event ev, Handler callback) {
+            handlers[ev.fd()] = std::move(callback);
         }
 
-        std::pair<Handler, IExecutor *> get_handler(Event ev) {
+        Handler get_handler(Event ev) {
             auto it = handlers.find(ev.fd());
             if (it == handlers.end())
-                throw std::logic_error("CallbackStorage: Event must be here");
+                throw std::logic_error(
+                        "CallbackStorage: Event must be here");
             
             auto res = std::move(it->second);
             handlers.erase(it);
@@ -49,20 +46,18 @@ private:
 
     EventListener   _listener;
     CallbackStorage _ev_storage;
+    IExecutor       *executor;
     std::mutex      _mutex;
 
 public:
-    EventLoop() = default;
-    EventLoop(const EventLoop &) = delete;
-    EventLoop(EventLoop &&) = default;
+    ExecutionContext(IExecutor *executor) : executor(executor) {};
+    ExecutionContext(const ExecutionContext &) = delete;
+    ExecutionContext(ExecutionContext &&) = default;
 
-    inline void add_handler_for_event(Event event,
-            Handler callback, IExecutor *executor) {
-        
+    inline void add_handler_for_event(Event event, Handler callback) {
         std::lock_guard guard(_mutex);
         _listener.add_event(event);
-        _ev_storage.set_handler(
-                    event, std::move(callback), executor);
+        _ev_storage.set_handler(event, std::move(callback));
     }
 
     void loop();

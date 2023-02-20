@@ -1,7 +1,7 @@
 #ifndef FT_EPOLL_BASED_L_HPP
 # define FT_EPOLL_BASED_L_HPP
 
-// # define USE_EPOLL // TODO
+# define USE_EPOLL // TODO
 
 # ifdef USE_EPOLL
 
