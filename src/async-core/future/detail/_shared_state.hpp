@@ -40,9 +40,13 @@ namespace ft::detail {
             _executor = executor;
         }
 
-        std::optional<T> try_get() {
+        bool try_get(std::optional<T> &opt) {
             std::lock_guard lock(_mutex);
-            return std::move(_value);
+            if (_value.has_value()) {
+                opt.emplace(std::move(_value.value()));
+                return true;
+            }
+            return false;
         }
 
         void set_value(T value) {

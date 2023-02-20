@@ -3,6 +3,7 @@
 
 # include "EventLoop.hpp"
 # include "../error/Result.hpp"
+# include <unistd.h>
 
 namespace ft::io {
 
@@ -22,6 +23,9 @@ public:
         fd = other.fd;
         other.fd = 0;
     }
+
+    static Result<Socket> conn_tcp_serv(const char *ip,
+                                uint16_t port, EventLoop *);
 
     ~Socket() {
         close();

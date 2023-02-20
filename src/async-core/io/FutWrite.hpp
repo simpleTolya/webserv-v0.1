@@ -3,6 +3,7 @@
 
 # include "../future/future.hpp"
 # include "out-of-context/ioConcepts.hpp"
+# include "EntityConcepts.hpp"
 # include "../util/Result.hpp"
 # include <iostream>
 
@@ -54,31 +55,64 @@ Future<Result<size_t>>  write_part(std::shared_ptr<W> writer,
 template <typename W>
   requires Write<W, ft::io::Error> && AsyncWrite<W>
 Future<Result<size_t>>  write_all(std::shared_ptr<W> writer, 
-                IExecutor *executor, Data d, size_t from_pos = 0) {
+        IExecutor *executor, Data d, size_t from_pos = 0, size_t sended = 0) {
     using _Result = Result<size_t>;
     
     Future<_Result> send_cnt = ft::io::fut::write_part(
         writer, d.data() + from_pos, d.size() - from_pos, executor);
 
     auto final_cnt = send_cnt.flatmap([
-        writer=writer, data=std::move(d), from_pos,
-        executor=executor
+        writer, data=std::move(d), from_pos,
+        executor, sended
         ](_Result send_cnt) mutable {
             
             if (send_cnt.is_err())
                 return futures::from_val(_Result(send_cnt.get_err()));
             
             auto _send_cnt = send_cnt.get_val();
+            sended += _send_cnt;
             if (from_pos + _send_cnt != data.size()) {
                 return ft::io::fut::write_all(writer, 
                         executor, std::move(data), from_pos + _send_cnt);
             }
-            return futures::from_val(_Result(data.size()));
+            return futures::from_val(_Result(sended));
         }
     );
     return final_cnt;
 }
 
+
+template <
+    typename W,
+    typename Serializer,
+    typename Entity = Serializer::Entity
+> requires EntitySerializer<Serializer, Entity> &&
+             Write<W, ft::io::Error> && AsyncWrite<W>
+Future<Result<size_t>>  write_entity(std::shared_ptr<W> writer, 
+        Serializer serializer, IExecutor *executor, size_t sended = 0) {
+    using _Result = Result<size_t>; 
+
+    switch (serializer.state()) {
+    case ft::io::State::PENDING:
+    {
+        Data data = serializer.get_data();
+        return ft::io::fut::write_all(writer, executor, std::move(data))
+            .flatmap([writer, executor, sended,
+                    serializer=std::move(serializer)
+                    ] (auto res) mutable {
+                
+                if (res.is_err())
+                    return futures::from_val(_Result(res.get_err()));
+                
+                return ft::io::fut::write_entity(
+                    writer, std::move(serializer), executor, sended);
+            });
+    }
+
+    case ft::io::State::READY:
+        return futures::from_val(_Result(sended));
+    }
+}
 
 } // namespace fut
     
@@ -96,7 +130,15 @@ public:                                                                 \
         IExecutor *executor, Data d, size_t from_pos = 0) {             \
            return ft::io::fut::write_all(                               \
                         writer_val, executor, std::move(d), from_pos);  \
-    }                                                               
-
+    }                                                                   \
+                                                                        \
+    template <                                                          \
+        typename Serializer,                                            \
+        typename Entity = Serializer::Entity                            \
+    > Future<Res<size_t, Writer::Error>> write_entity(                  \
+            Serializer serializer, IExecutor *executor) {               \
+           return ft::io::fut::write_entity(                            \
+                    writer_val, std::move(serializer), executor);       \
+    }
 
 #endif // FT_IO_FUTWRITE_HPP

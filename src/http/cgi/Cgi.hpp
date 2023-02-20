@@ -1,7 +1,6 @@
 #ifndef FT_HTTP_CGI_HPP
 # define FT_HTTP_CGI_HPP
 
-# include <unistd.h>
 # include "../../async-core/io/FutPipe.hpp"
 # include "../../async-core/future/future.hpp"
 # include "../HttpRequest.hpp"
@@ -14,7 +13,6 @@ struct Error {
 };
 
 class object {
-// TODO
 public:
     io::FutPipeReceiver from_cgi;
     io::FutPipeSender   to_cgi;

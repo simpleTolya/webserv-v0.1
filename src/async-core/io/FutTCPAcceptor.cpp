@@ -2,8 +2,9 @@
 
 namespace ft::io {
 
-Future<Result<Socket>> FutTCPAcceptor::accept_conn(IExecutor *executor) {
-    using _Result = Result<Socket>;
+Future<Result<std::pair<Socket, InAddrInfo>>>
+                FutTCPAcceptor::accept_conn(IExecutor *executor) {
+    using _Result = Result<std::pair<Socket, InAddrInfo>>;
 
     auto [future, promise] = ft::futures::make_contract<_Result>();
     this->impl->when_acceptable([

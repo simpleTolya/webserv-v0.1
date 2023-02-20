@@ -1,4 +1,5 @@
 #include "Socket.hpp"
+#include <arpa/inet.h>
 
 namespace ft::io {
 
@@ -36,6 +37,26 @@ Result<Void>    Socket::read_vec(Data &buf) {
         for (int i = 0; i < byte_cnt; ++i)
             buf.emplace_back(tmp_buf[i]);
     }
+}
+
+Result<Socket>  Socket::conn_tcp_serv(const char *ip, 
+                        uint16_t port, EventLoop *el) {
+    using _Result = Result<Socket>;
+
+    sockaddr_in servaddr = (const sockaddr_in){0};
+ 
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1)
+        return _Result(from_errno(errno));
+ 
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr(ip);
+    servaddr.sin_port = htons(port);
+
+    if (connect(sockfd, (sockaddr*)&servaddr, sizeof(servaddr)) != 0)
+        return _Result(from_errno(errno));
+    
+    return _Result(Socket(sockfd, el));
 }
 
 } // namespace ft::io

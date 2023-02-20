@@ -1,7 +1,8 @@
 #include "Cgi.hpp"
-#include "../writers/HttpRequestWriter.hpp"
+#include "../writers/HttpRequestSerializer.hpp"
 #include "../parsers/HttpResponseParser.hpp"
 #include <cstring>
+#include <unistd.h>
 
 namespace ft::http::cgi {
 
@@ -87,21 +88,11 @@ Future<io::Result<Void>> object::send_request(
                         HttpRequest req, IExecutor *executor) {
     using _Result = io::Result<Void>;
 
-    HttpRequestWriter w(std::move(req));
-    return to_cgi.write_all(executor, std::move(w.headers)).flatmap([
-        to_cgi=&this->to_cgi, executor, body = std::move(w.body)
-        ] (auto res) mutable {
-            if (res.is_err()) {
-                return futures::from_val(_Result(res.get_err()));
-            }
-            return to_cgi->write_all(executor, std::move(body)).map(
-                [](auto res){
-                    if (res.is_err())
-                        return _Result(res.get_err());
-                    return _Result(Void{});
-                }
-            );
-    });
+    return to_cgi.write_entity(
+            HttpRequestSerializer(std::move(req)), executor)
+                .map([](auto res){
+                    return res.map([](auto _){return Void{};});
+                });
 }
 
 Future<Res<HttpResponse, http::Error>> 
@@ -122,7 +113,7 @@ Future<Res<HttpResponse, Error>> send_request(
             flatmap([obj, executor](auto res) mutable {
                 if (res.is_err())
                     return futures::from_val(_Result(Error{
-                        std::string("cgi::send_request") +
+                        std::string("cgi::send_request ") +
                         ft::io::error_description(res.get_err())})
                     );
                 return obj.get_response(executor).map(

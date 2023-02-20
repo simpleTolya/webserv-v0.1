@@ -1,59 +1,23 @@
 #ifndef FT_EPOLL_BASED_L_HPP
 # define FT_EPOLL_BASED_L_HPP
 
-# define USE_EPOLL // DELETE ME
+// # define USE_EPOLL // TODO
 
 # ifdef USE_EPOLL
 
 #  define EPOLL_SIZE 100
 
-#  include <iostream>
-#  include <stdexcept>
-#  include <string>
 #  include <errno.h>
-#  include <sys/socket.h>
 #  include <sys/epoll.h>
 #  include <unistd.h>
 #  include <cstdlib>
-#  include <netinet/in.h>
-#  include <netdb.h>
 #  include <cstring>
 #  include "non_block.hpp"
+#  include "event.hpp"
+#  include <iostream>
+#  include <stdexcept>
 
 namespace ft::io::detail {
-
-struct _event {
-    enum EventType {
-        TO_READ   = 0,
-        TO_WRITE  = 1,
-        TO_ACCEPT = 2,
-        CLOSED    = 3,
-        ERROR     = 4
-    };
-
-    _event(uint64_t _data) : _data(_data) {}
-
-    _event(int fd, EventType event_type) noexcept {
-        _data = static_cast<uint64_t>(event_type);
-        _data |= (static_cast<uint64_t>(fd) << 32);
-    }
-
-    int fd() const noexcept {
-        return static_cast<int>(_data >> 32);
-    }
-
-    EventType event_type() const noexcept {
-        return static_cast<EventType>(_data & right_half);
-    }
-
-    // left 32 bits for fd and other 32 bits for event_type
-    uint64_t _data;
-
-private:
-    // 32 right half 1 bits
-    static constexpr uint64_t right_half = (2ull << 33ull) - 1ull;
-};
-
 
 class _low_level_listener {
 

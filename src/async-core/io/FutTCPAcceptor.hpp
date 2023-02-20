@@ -19,7 +19,7 @@ public:
         return impl;
     }
 
-    Future<Result<Socket>> accept_conn(IExecutor *executor);
+    Future<Result<std::pair<Socket, InAddrInfo>>> accept_conn(IExecutor *executor);
 };
 
 } // namespace ft::io

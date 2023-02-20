@@ -4,6 +4,7 @@
 # include <map>
 # include <string>
 # include "error/Result.hpp"
+# include <vector>
 
 namespace ft::http {
 
@@ -29,6 +30,8 @@ struct HttpResponse {
     std::vector<u_char> body;
 
     HttpResponse() : code(599) {}
+
+    static Result<HttpResponse> static_from(const std::string &file_path);
 };
 
 

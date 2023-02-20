@@ -4,7 +4,7 @@
 # include "../future/future.hpp"
 # include "out-of-context/ioConcepts.hpp"
 # include "../util/Result.hpp"
-# include "EntityCreator.hpp"
+# include "EntityConcepts.hpp"
 # include <iostream>
 
 namespace ft::io {
@@ -94,14 +94,15 @@ Future<Result<Data>> read_until(
 
 
 template <
-    typename R, 
-    typename EntityCreator,
+    typename R,
+    typename Creator,
     typename Err = R::Error,
-    typename Entity = EntityCreator::Entity,
-    typename Error = EntityCreator::Error
->       requires Read<R, ft::io::Error> && AsyncRead<R>
+    typename Entity = Creator::Entity,
+    typename Error = Creator::Error
+>       requires EntityCreator<Creator, Entity, Error> && 
+                Read<R, ft::io::Error> && AsyncRead<R>
 Future<Res<Entity, Error>> read_entity(
-    std::shared_ptr<R> reader, EntityCreator creator, IExecutor * executor) {
+    std::shared_ptr<R> reader, Creator creator, IExecutor * executor) {
 
     using _Result = Res<Entity, Error>;
 

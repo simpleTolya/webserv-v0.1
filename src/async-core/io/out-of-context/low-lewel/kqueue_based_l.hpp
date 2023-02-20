@@ -3,6 +3,9 @@
 
 # ifdef USE_KQUEUE
 
+
+#  include "event.hpp"
+
 namespace ft::io::detail {
 
 } // namespace ft::io::detail

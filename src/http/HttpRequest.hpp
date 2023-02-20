@@ -17,9 +17,6 @@ struct HttpRequest {
     std::vector<unsigned char> body;
 };
 
-
 } // namespace ft::http
-
-
 
 #endif // FT_HTTP_REQUEST_HPP

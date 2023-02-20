@@ -52,8 +52,8 @@ public:
         return this;
     }
 
-    std::optional<T> try_get() {
-        return _st->try_get();
+    bool try_get(std::optional<T> &opt) {
+        return _st->try_get(opt);
     }
 
     T block_get() {

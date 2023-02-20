@@ -57,6 +57,10 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "future": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "set": "cpp",
+        "list": "cpp",
+        "fstream": "cpp",
+        "coroutine": "cpp"
     }
 }

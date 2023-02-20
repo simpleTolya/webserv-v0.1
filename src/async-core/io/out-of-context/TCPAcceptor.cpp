@@ -1,4 +1,6 @@
 #include "TCPAcceptor.hpp"
+#include <arpa/inet.h>
+#include <cstring>
 
 namespace ft::io {
 
@@ -26,6 +28,25 @@ Result<TCPAcceptor> TCPAcceptor::local_with_port(
     }
 
     return Result<TCPAcceptor>(TCPAcceptor(sockfd, event_loop));
+}
+
+Result<std::pair<Socket, InAddrInfo>> TCPAcceptor::accept_conn() {
+    using _Result = Result<std::pair<Socket, InAddrInfo>>;
+
+    sockaddr_in client_addr = (const sockaddr_in){0};
+    socklen_t addr_len = sizeof(client_addr);
+    
+    InAddrInfo addr_info;
+
+    int conn_fd = accept(fd, (sockaddr*)&client_addr, &addr_len);
+    if (conn_fd == -1) {
+        return _Result(from_errno(errno));
+    }
+    
+    std::strcpy(addr_info.ip, inet_ntoa(client_addr.sin_addr)); 
+    addr_info.port = ntohs(client_addr.sin_port);
+
+    return _Result(std::make_pair<>(Socket(conn_fd, event_loop), addr_info));
 }
 
 } // namespace ft::io

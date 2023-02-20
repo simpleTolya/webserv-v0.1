@@ -145,7 +145,8 @@ Result<Void>  HttpResponseParser::parse_first_header(const std::string &s) {
     auto code_end = s.find_first_of(' ', version_end + 1);
     if (code_end == std::string::npos or code_end == version_end + 1)
         return _Result(Error::HTTP_REQUEST_PARSE);
-    auto res = HttpResponse::Status::from(s.substr(version_end + 1, code_end));
+    auto res = HttpResponse::Status::from(
+                s.substr(version_end + 1, code_end - version_end - 1));
     if (res.is_err())
         return _Result(res.get_err());
     this->code = res.get_val();

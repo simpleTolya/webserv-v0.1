@@ -197,11 +197,15 @@ static void _ADD_TC_FUN_PREFIX(_name)()
 
 
 # define ASSERT_TRUE(_must_be_true) {auto __line = __LINE__; \
+    bool __is_true = _must_be_true;  \
     test_core::register_assert_true( \
-        _must_be_true,  \
-        #_must_be_true, \
-        __line          \
-    );                  \
+        __is_true,          \
+        #_must_be_true,     \
+        __line              \
+    );                      \
+                            \
+    if (not (__is_true))    \
+        return;             \
 }
 
 # define ASSERT_EXCEPTION(_expr, _exception) {auto __line = __LINE__;       \
@@ -212,6 +216,9 @@ static void _ADD_TC_FUN_PREFIX(_name)()
         __the_exception_handled = true;                                     \
     } catch (...) {}                                                        \
     test_core::register_exception_handling(__the_exception_handled, __line);\
+                                      \
+    if (not __the_exception_handled)  \
+        return;                       \
 }
 
 #endif // FT_SIMPLE_TEST_LIB_HPP

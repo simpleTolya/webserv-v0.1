@@ -1,10 +1,10 @@
-#include "HttpResponseWriter.hpp"
+#include "HttpResponseSerializer.hpp"
 #include "../HttpResponse.hpp"
 
 namespace ft::http {
 
-HttpResponseWriter::HttpResponseWriter(HttpResponse req) {
-    std::vector<u_char> headers;
+HttpResponseSerializer::HttpResponseSerializer(HttpResponse req) {
+    io::Data headers;
 
     auto back_inserter = [&headers](const char *s) {
         for (size_t i = 0; s[i] != 0; ++i)
@@ -31,5 +31,38 @@ HttpResponseWriter::HttpResponseWriter(HttpResponse req) {
     this->body = std::move(req.body);
 }
 
+HttpResponseSerializer HttpResponseSerializer::from(HttpResponse resp) {
+    return HttpResponseSerializer(std::move(resp));
+}
+
+io::Data HttpResponseSerializer::get_data() {
+    switch (_state)
+    {
+    case State::HEADERS: {
+        _state = State::BODY;
+        return std::move(headers);
+    }
+    
+    case State::BODY: {
+        _state = State::READY;
+        return std::move(body);
+    }
+
+    case State::READY:
+        return {};
+    }
+}
+
+io::State HttpResponseSerializer::state() const noexcept {
+    switch (_state)
+    {
+    case State::HEADERS:
+    case State::BODY:
+        return io::State::PENDING;
+
+    case State::READY:
+        return io::State::READY;
+    }
+}
 
 } // namespace ft::http

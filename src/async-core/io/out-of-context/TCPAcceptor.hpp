@@ -1,12 +1,17 @@
 #ifndef FT_TCPACCEPTOR_HPP
 # define FT_TCPACCEPTOR_HPP
 
-# define LISTEN_BACKLOG 10
+# define LISTEN_BACKLOG 512
 
 # include "EventLoop.hpp"
 # include "Socket.hpp"
 
 namespace ft::io {
+
+struct InAddrInfo {
+    char ip[18] = {0};
+    int port = 0;
+};
 
 class TCPAcceptor {
     int fd;
@@ -36,13 +41,7 @@ public:
         }
     }
 
-    inline Result<Socket> accept_conn() {
-        int conn_fd = accept(fd, 0, 0); // TODO USE sockaddr info
-        if (conn_fd == -1) {
-            return Result<Socket>(from_errno(errno));
-        }
-        return Result<Socket>(Socket(conn_fd, event_loop));
-    }
+    Result<std::pair<Socket, InAddrInfo>> accept_conn();
 
     inline void when_acceptable(Handler callback, IExecutor * executor) {
         event_loop->add_handler_for_event(

@@ -149,7 +149,7 @@ Result<Void>  HttpRequestParser::parse_first_header(const std::string &s) {
     auto path_end = s.find_first_of(' ', method_end + 1);
     if (path_end == std::string::npos or path_end == method_end + 1)
         return _Result(Error::HTTP_REQUEST_PARSE);
-    this->path = s.substr(method_end + 1, path_end);
+    this->path = s.substr(method_end + 1, path_end - method_end - 1);
 
     this->http_version = s.substr(path_end + 1);
     if (this->http_version.empty())
