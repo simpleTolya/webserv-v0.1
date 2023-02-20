@@ -119,8 +119,6 @@ Future<Res<Entity, Error>> read_entity(
                 return futures::from_val(std::move(creator.create_entity()));
         };
         // TODO
-        std::cerr << "State not matching: " << std::endl; 
-        std::terminate();
     });
 }
 

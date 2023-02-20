@@ -1,5 +1,5 @@
-#ifndef FT_Res_HPP
-# define FT_Res_HPP
+#ifndef FT_RES_HPP
+# define FT_RES_HPP
 
 # include <variant>
 # include <type_traits>
@@ -70,8 +70,6 @@ public:
             return std::get<T>(_res);
         return default_val;
     }
-
-    // Maybe make own option, which will be a monad?...
     
     std::optional<T> ok() {
         if (_is_ok)
@@ -87,7 +85,7 @@ public:
 };
 
 
-// TODO
+// TODO prototype (exception -> Result)
 // template <typename F, typename... Args,
 //     typename R = decltype(std::declval<F>()((std::declval<Args>)...))>
 // Res<R, std::exception> wrapped_in_res(F&& f, Args&&... args) {
@@ -103,4 +101,4 @@ public:
 } // namespace ft
 
 
-#endif // FT_Res_HPP
+#endif // FT_RES_HPP

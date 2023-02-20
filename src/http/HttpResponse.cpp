@@ -16,7 +16,7 @@ Result<Response> Response::static_from(const std::string &file_path) {
         } else if (extension == "txt") {
             content_type = "text/plain";
         } else {
-            return _Result(Error::UNDEFINED); // TODO
+            return _Result(Error::UNDEFINED);
         }
     }
 

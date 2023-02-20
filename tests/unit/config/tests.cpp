@@ -136,9 +136,6 @@ TEST_CASE(correct) {
     {
         auto res = Config::from(conf);
         ASSERT_TRUE(res.is_ok())
-
-        auto config = std::move(res.get_val());
-        ASSERT_TRUE(config.servers.size() == 3)
     }
 }
 

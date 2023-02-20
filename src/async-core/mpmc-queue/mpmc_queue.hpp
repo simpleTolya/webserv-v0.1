@@ -8,18 +8,16 @@
 # include <utility>
 # include <functional>
 # include <atomic>
-# include <exception>
 
 # include "detail/forward_list.hpp"
+# include <async-core/util/Result.hpp>
+# include <async-core/util/util.hpp>
 
 namespace ft {
 
 namespace mpmc {
 
-struct channel_closed : std::exception {
-    const char *what() const noexcept override {
-        return "Channel closed";
-    }
+struct closed  {
 };
 
 } // namespace mpmc
@@ -33,6 +31,7 @@ class UnboundedMPMCQueue {
     std::condition_variable  _not_empty;
     unsigned _consumder_count;
     unsigned _producer_count;
+
 public:
     using ValueType = T;
     using AllocatorType = Allocator;
@@ -64,32 +63,36 @@ public:
         }
     }
 
-    void push(T value) {
+    ft::Res<Void, ft::mpmc::closed> push(T value) {
+        using _Result = ft::Res<Void, ft::mpmc::closed>;
         std::lock_guard lock(_mutex);
         if (_consumder_count == 0) {
-            throw mpmc::channel_closed();
+            return _Result(ft::mpmc::closed{});
         }
         _queue.push_back(std::move(value));
         _not_empty.notify_one();
+        return _Result(Void{});
     }
 
-    T pop() {
+    ft::Res<T, ft::mpmc::closed> pop() {
+        using _Result = ft::Res<T, ft::mpmc::closed>;
         std::unique_lock lock(_mutex);
         while (_queue.is_empty()) {
             if (_producer_count == 0) {
-                throw mpmc::channel_closed();
+                return _Result(ft::mpmc::closed{});
             }
             _not_empty.wait(lock);
         }
-        return std::move(_queue.pop_front().value());
+        return _Result(std::move(_queue.pop_front().value()));
     }
 
-    std::optional<T> try_pop() {
+    ft::Res<std::optional<T>, ft::mpmc::closed> try_pop() {
+        using _Result = ft::Res<std::optional<T>, ft::mpmc::closed>;
         std::lock_guard lock(_mutex);
         if (_queue.is_empty() && _producer_count == 0) {
-            throw mpmc::channel_closed();
+            return _Result(ft::mpmc::closed{});
         }
-        return std::move(_queue.pop_front());
+        return _Result(std::move(_queue.pop_front()));
     }
 };
 
@@ -135,8 +138,8 @@ public:
     //     _queue->push(std::forward<Args>(value)...);
     // }
 
-    void send(T value) {
-        _queue->push(std::move(value));
+    ft::Res<Void, closed> send(T value) {
+        return _queue->push(std::move(value));
     }
 };
 
@@ -165,12 +168,12 @@ public:
             _queue->_decr_consumer_cnt();
     }
 
-    T recv() {
-        return std::move(_queue->pop());
+    ft::Res<T, closed> recv() {
+        return _queue->pop();
     }
 
-    std::optional<T> try_recv() {
-        return std::move(_queue->try_pop());
+    ft::Res<std::optional<T>, closed> try_recv() {
+        return _queue->try_pop();
     }
 };
 

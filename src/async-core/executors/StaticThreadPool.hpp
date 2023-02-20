@@ -21,7 +21,15 @@ class StaticThreadPool : public IExecutor {
                         tasks = std::move(tasks)
                     ] () mutable {
                         while (true) {
-                            auto task = std::move(tasks.recv());
+                            auto task_res = std::move(tasks.recv());
+                            if (task_res.is_err()) {
+                                // channel closed
+                                // not normal situation - logic error
+                                throw std::logic_error(
+                                    "mpmc closed in static thread pool"
+                                );
+                            }
+                            auto task = std::move(task_res.get_val());
                             if (not task.has_value())
                                 break ;
                             task.value()();
@@ -71,7 +79,14 @@ public:
     }
 
     void execute(Task && task) override {
-        to_workers.send(std::move(task));
+        auto res = to_workers.send(std::move(task));
+        if (res.is_err()) {
+            // channel closed
+            // all workers are down - logic error
+            throw std::logic_error(
+                "mpmc closed in static thread pool"
+            );
+        }
     }
 
     void shutdown() {

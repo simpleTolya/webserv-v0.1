@@ -19,9 +19,9 @@ TEST_CASE_WITH_TIMER(channel, 5200) {
     });
     t.detach();
 
-    ASSERT_TRUE(receiver.recv() == 100);
-    ASSERT_TRUE(receiver.recv() == 100);
-    ASSERT_TRUE(receiver.recv() == 100);
-    ASSERT_EXCEPTION(receiver.recv(), ft::mpmc::channel_closed)
-    ASSERT_EXCEPTION(receiver.recv(), ft::mpmc::channel_closed)
+    ASSERT_TRUE(receiver.recv().get_val() == 100);
+    ASSERT_TRUE(receiver.recv().get_val() == 100);
+    ASSERT_TRUE(receiver.recv().get_val() == 100);
+    ASSERT_TRUE(receiver.recv().is_err())
+    ASSERT_TRUE(receiver.recv().is_err())
 }
