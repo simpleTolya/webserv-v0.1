@@ -3,6 +3,7 @@
 #include <fstream>
 #include <streambuf>
 #include <iostream>
+
 namespace ft {
 
 std::list<std::string> ServConf::tokenize(const std::string &s) {

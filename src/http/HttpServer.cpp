@@ -6,7 +6,7 @@ io::Result<Server>   Server::create(const std::string &ip,
                                 int port, io::ExecutionContext *ctx) {
     using _Result = io::Result<Server>;
 
-    (void) ip; // TODO provide ip
+    (void) ip; // provide ip
     auto res = io::TCPAcceptor::local_with_port(port, ctx);
     if (res.is_err())
         return _Result(res.get_err());

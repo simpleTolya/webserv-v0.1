@@ -17,7 +17,7 @@ struct Response {
     public:
         static Result<Status> from(int val) {
             if (val < 100 or val >= 600)
-                return Result<Status>(Error::HTTP_REQUEST_PARSE); // TODO
+                return Result<Status>(Error::INVALID_STATUC_CODE);
             return Result<Status>(Status(val));
         }
         static Result<Status> from(const std::string & s) {

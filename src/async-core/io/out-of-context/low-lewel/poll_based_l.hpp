@@ -51,7 +51,8 @@ public:
 
         int fd_cnt = poll(poll_evs.data(), poll_evs.size(), INFINITELY);
         if (fd_cnt == -1) {
-           // TODO
+            throw std::logic_error(
+                std::string("poll block: ") + strerror(errno));
         }
 
         for (const auto & poll_ev : poll_evs) {

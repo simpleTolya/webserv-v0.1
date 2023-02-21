@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <cstring>
+#include <string.h>
 
 
 int main(int argc, char const* argv[])
@@ -34,7 +34,7 @@ int main(int argc, char const* argv[])
     }
     
     char response[255] = {};
-    auto si = read(sockD, response, sizeof(response) - 1);
+    ssize_t si = read(sockD, response, sizeof(response) - 1);
     if (si == -1) {
         printf("read\n");
         return 1;
@@ -42,7 +42,5 @@ int main(int argc, char const* argv[])
 
     response[si] = 0;
     printf("%s\n", response);
-    
-  
     return 0;
 }

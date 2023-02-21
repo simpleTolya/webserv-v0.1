@@ -19,6 +19,23 @@ public:
     using ValueType = T;
     using ErrorType = E;
 
+    /*
+        Promlem when T is E
+        
+        Possible solution:
+            Create structs:
+
+                template <typename V>
+                Success(V v)  // value holder for sucess val (any type)
+                with implicit constructor from v
+
+                template <typename E>
+                Error(E e)  // value holder for some error (any type)
+                with implicit constructor from e
+            
+            And make explicit constructor for Res from Error and Success
+    */
+
     explicit Res(T val) : _res(std::move(val)),
         _is_ok(true) {}
 
@@ -83,7 +100,6 @@ public:
         return std::nullopt;
     }
 };
-
 
 // TODO prototype (exception -> Result)
 // template <typename F, typename... Args,

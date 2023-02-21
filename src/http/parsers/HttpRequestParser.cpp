@@ -67,6 +67,7 @@ io::State RequestParser::operator()
     }
 
     } // switch case end
+    throw std::logic_error("HttpRequestParser::operator(): not match State");
 }
 
 

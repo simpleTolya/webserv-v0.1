@@ -50,6 +50,7 @@ set(FT_ASYNC_CORE_SOURCES
         src/async-core/util/Result.hpp
         src/async-core/util/move_only_func.hpp
         src/async-core/util/stream_wrappers.hpp
+        src/async-core/util/stream_wrappers.cpp
         src/async-core/util/util.hpp
         src/async-core/util/thread_local_buf.cpp)
 
@@ -143,22 +144,24 @@ set_target_properties(catch_tests_debug PROPERTIES COMPILE_FLAGS
         "-DCATCH_TESTS -I${CMAKE_CURRENT_SOURCE_DIR}/src \
         -I${CMAKE_CURRENT_SOURCE_DIR}/tests/unit")
 
-add_executable(echo_server_v1 echo-serv-v1/server.cpp ${FT_ASYNC_CORE_SOURCES})
+add_executable(echo_server_v1 echo-servs/echo-serv-v1/server.cpp ${FT_ASYNC_CORE_SOURCES})
 set_target_properties(echo_server_v1 PROPERTIES COMPILE_FLAGS 
         "-DCATCH_TESTS -I${CMAKE_CURRENT_SOURCE_DIR}/src \
         -fsanitize=undefined,address")
 set_target_properties(echo_server_v1 PROPERTIES LINK_FLAGS "-fsanitize=undefined,address")
 
 
-add_executable(echo_server_v2 echo-serv-v2/server.cpp ${FT_ASYNC_CORE_SOURCES})
+add_executable(echo_server_v2 echo-servs/echo-serv-v2/server.cpp ${FT_ASYNC_CORE_SOURCES})
 set_target_properties(echo_server_v2 PROPERTIES COMPILE_FLAGS 
         "-DCATCH_TESTS -I${CMAKE_CURRENT_SOURCE_DIR}/src \
         -fsanitize=undefined,address")
 set_target_properties(echo_server_v2 PROPERTIES LINK_FLAGS "-fsanitize=undefined,address")
 
 
-add_executable(echo_server_v3 echo-serv-v3/server.cpp ${FT_ASYNC_CORE_SOURCES})
+add_executable(echo_server_v3 echo-servs/echo-serv-v3/server.cpp ${FT_ASYNC_CORE_SOURCES})
 set_target_properties(echo_server_v3 PROPERTIES COMPILE_FLAGS 
         "-DCATCH_TESTS -I${CMAKE_CURRENT_SOURCE_DIR}/src \
         -fsanitize=thread")
 set_target_properties(echo_server_v3 PROPERTIES LINK_FLAGS "-fsanitize=thread")
+
+add_executable(client simple_client.c)

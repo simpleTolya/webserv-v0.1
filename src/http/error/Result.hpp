@@ -9,14 +9,17 @@ namespace ft::http {
 struct Error {
     enum _err {
         HTTP_REQUEST_PARSE,
+        HTTP_RESPONSE_PARSE,
         UNDEFINED,
-        INCOMPLETE
+        INCOMPLETE,
+        INVALID_STATUC_CODE,
+        IO_ERROR
     } _http_err = UNDEFINED;
 
     io::Error _io_err = io::Error::UNDEFINED;
 
-    Error(io::Error err) {}
-    Error(_err err) {}
+    Error(io::Error err) :  _http_err(IO_ERROR), _io_err(err) {}
+    Error(_err err) : _http_err(err) {}
 };
 
 template <typename T>

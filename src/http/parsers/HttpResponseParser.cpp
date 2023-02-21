@@ -1,5 +1,5 @@
 #include "HttpResponseParser.hpp"
-
+#include <stdexcept>
 
 namespace ft::http {
 
@@ -51,7 +51,7 @@ io::State ResponseParser::operator()
             } else {
                 auto res = parse_header(std::move(header_line));
                 if (res.is_err()) {
-                    _err = Result<Void>(Error::HTTP_REQUEST_PARSE);
+                    _err = Result<Void>(Error::HTTP_RESPONSE_PARSE);
                     return io::State::READY;
                 }
 
@@ -66,6 +66,7 @@ io::State ResponseParser::operator()
     }
 
     } // switch case end
+    throw std::logic_error("HttpResponseParser::operator(): not match State");
 }
 
 
@@ -75,7 +76,7 @@ Result<std::pair<std::string, std::string>>
     using _Result = Result<std::pair<std::string, std::string>>;
     auto idx = line.find(":");
     if (idx == std::string::npos) {
-        return _Result(Error::HTTP_REQUEST_PARSE);
+        return _Result(Error::HTTP_RESPONSE_PARSE);
     }
     auto key = line.substr(0, idx);
     auto val = line.substr(idx + 2);
@@ -89,13 +90,13 @@ Result<Void>    ResponseParser::set_content_length() {
 
     auto it = headers.find("Content-Length");
     if (it == headers.end()) {
-        return Result<Void>(Error::HTTP_REQUEST_PARSE);
+        return Result<Void>(Error::HTTP_RESPONSE_PARSE);
     }
     
     try {
         content_length = std::stoul(it->second);
     } catch (const std::exception &e) {
-        return Result<Void>(Error::HTTP_REQUEST_PARSE);
+        return Result<Void>(Error::HTTP_RESPONSE_PARSE);
     }
     return Result<Void>({});
 }
@@ -139,12 +140,12 @@ Result<Void>  ResponseParser::parse_first_header(const std::string &s) {
 
     auto version_end = s.find(' ');
     if (version_end == std::string::npos or version_end == 0)
-        return _Result(Error::HTTP_REQUEST_PARSE);
+        return _Result(Error::HTTP_RESPONSE_PARSE);
     this->http_version = s.substr(0, version_end);
 
     auto code_end = s.find_first_of(' ', version_end + 1);
     if (code_end == std::string::npos or code_end == version_end + 1)
-        return _Result(Error::HTTP_REQUEST_PARSE);
+        return _Result(Error::HTTP_RESPONSE_PARSE);
     auto res = Response::Status::from(
                 s.substr(version_end + 1, code_end - version_end - 1));
     if (res.is_err())
@@ -153,7 +154,7 @@ Result<Void>  ResponseParser::parse_first_header(const std::string &s) {
 
     this->status = s.substr(code_end + 1);
     if (this->status.empty())
-        return _Result(Error::HTTP_REQUEST_PARSE);
+        return _Result(Error::HTTP_RESPONSE_PARSE);
     return _Result(Void{});
 }
 

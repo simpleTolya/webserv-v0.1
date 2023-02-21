@@ -1,7 +1,7 @@
 #ifndef FT_EPOLL_BASED_L_HPP
 # define FT_EPOLL_BASED_L_HPP
 
-# define USE_EPOLL // TODO
+# define USE_EPOLL
 
 # ifdef USE_EPOLL
 
@@ -32,8 +32,8 @@ public:
     _low_level_listener() {
         _epfd = epoll_create(EPOLL_SIZE);
         if (_epfd == -1) {
-            std::cerr << "Create epoll" << std::endl;
-            std::terminate();
+            throw std::logic_error(
+                std::string("Epoll Create: ") + strerror(errno));
         }
     }
 
@@ -59,9 +59,8 @@ public:
             _epfd, EPOLL_CTL_ADD, event.fd(), &e_event);
         
         if (e_code) {
-            std::cerr << "Add event" << std::endl;
-            std::terminate();
-            // throw std::logic_error(strerror(errno));
+            throw std::logic_error(
+                std::string("Epoll Add event: ") + strerror(errno));
         }
     }
 
@@ -70,17 +69,16 @@ public:
             _epfd, EPOLL_CTL_DEL, event.fd(), NULL);
         
         if (e_code) {
-            std::cerr << "Del event" << std::endl;
-            std::terminate();
+            throw std::logic_error(
+                std::string("Epoll del event: ") + strerror(errno));
         }
     }
 
     void block(std::vector<_event> & events) {
         int fd_cnt = epoll_wait(_epfd, _events, EPOLL_SIZE, INFINITELY);
         if (fd_cnt == -1) {
-            // TODO
-            std::cerr << "block event" << std::endl;
-            std::terminate();
+            throw std::logic_error(
+                std::string("Epoll block: ") + strerror(errno));
         }
 
         for (int i = 0; i < fd_cnt; ++i) {

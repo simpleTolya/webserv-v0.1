@@ -118,7 +118,7 @@ Future<Res<Entity, Error>> read_entity(
             case ft::io::State::READY:
                 return futures::from_val(std::move(creator.create_entity()));
         };
-        // TODO
+        throw std::logic_error("FutRead::read_entity: not match ft::io::State");
     });
 }
 

@@ -9,43 +9,53 @@
 using namespace ft;
 using namespace io;
 
-void do_accept(std::shared_ptr<TCPAcceptor> acceptor, EventLoop* event_loop, IExecutor *executor);
+void do_accept(std::shared_ptr<TCPAcceptor> acceptor);
 
-// server
+// Global context for Fut* objs
+ft::io::ExecutionContext *ctx;
+
+void async_main(int argc, char *argv[]);
+
 int main(int argc, char *argv[]) {
     IExecutor *executor = same_thread::_();
-    
-    EventLoop event_loop;
 
-    auto res = std::move(TCPAcceptor::local_with_port(8089, &event_loop));
-    if (res.is_err()) {
-        std::cerr << "Acceptor failed" << std::endl;
-        std::cerr << ft::io::error_description(res.get_err()) << std::endl;
-        return 1;
-    }
-    auto acceptor = std::make_shared<TCPAcceptor>(std::move(res.get_val()));
-    
-    do_accept(acceptor, &event_loop, executor);
+    ft::io::ExecutionContext context(executor);
+    ctx = &context;
 
-    event_loop.loop();
+    async_main(argc, argv);
+
+    context.loop();
     return 0;
 }
 
-// callback hell
-void do_accept(std::shared_ptr<TCPAcceptor> acceptor, IExecutor *executor) {
+void async_main(int argc, char *argv[]) {
+    auto res = std::move(TCPAcceptor::local_with_port(8089, ctx));
+    if (res.is_err()) {
+        std::cerr << "Acceptor failed" << std::endl;
+        std::cerr << ft::io::error_description(res.get_err()) << std::endl;
+        std::exit(-1);
+    }
+    auto acceptor = std::make_shared<TCPAcceptor>(std::move(res.get_val()));
+    
+    do_accept(acceptor);
+}
+
+void do_accept(std::shared_ptr<TCPAcceptor> acceptor) {
     acceptor->when_acceptable(
-        [acceptor, executor](Event::EventType ev) {
+        [acceptor](Event::EventType ev) {
             auto res = acceptor->accept_conn();
+
+            do_accept(acceptor);
             if (res.is_err()) {
                 std::cerr << "Accept failed" << std::endl;
                 std::cerr << ft::io::error_description(res.get_err()) << std::endl;
                 return;
             }
 
-            Socket sock = std::move(res.get_val());
+            auto [sock, _] = std::move(res.get_val());
             auto shrd_sock = std::make_shared<Socket>(std::move(sock));
             shrd_sock->when_readable(
-                [shrd_sock, executor](Event::EventType ev) mutable {
+                [shrd_sock](Event::EventType ev) mutable {
                     if (ev != Event::TO_READ) {
                         std::cerr << " Some other" << std::endl;
                     }
@@ -71,16 +81,10 @@ void do_accept(std::shared_ptr<TCPAcceptor> acceptor, IExecutor *executor) {
                                     res.get_val() << std::endl;
                                 return;
                             }
-                        },
-                        executor
+                        }
                     );
-                },
-
-                executor
+                }
             );
-            
-            do_accept(acceptor, executor);
-        },
-        executor
+        }
     );
 }

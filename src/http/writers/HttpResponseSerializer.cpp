@@ -1,5 +1,6 @@
 #include "HttpResponseSerializer.hpp"
 #include <http/HttpResponse.hpp>
+#include <stdexcept>
 
 namespace ft::http {
 
@@ -51,6 +52,8 @@ io::Data ResponseSerializer::get_data() {
     case State::READY:
         return {};
     }
+    throw std::logic_error(
+        "HttpResponseSerializer::get_data(): not match State");
 }
 
 io::State ResponseSerializer::state() const noexcept {
@@ -63,6 +66,8 @@ io::State ResponseSerializer::state() const noexcept {
     case State::READY:
         return io::State::READY;
     }
+    throw std::logic_error(
+        "HttpResponseSerializer::state(): not match State");
 }
 
 } // namespace ft::http

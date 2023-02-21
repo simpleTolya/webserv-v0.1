@@ -32,7 +32,7 @@ void async_main(int argc, char *argv[]) {
     if (res.is_err()) {
         std::cerr << "Acceptor failed" << std::endl;
         std::cerr << ft::io::error_description(res.get_err()) << std::endl;
-        return ;
+        std::exit(-1);
     }
 
     auto acceptor = FutTCPAcceptor(std::move(res.get_val()));

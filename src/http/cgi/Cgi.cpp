@@ -70,6 +70,8 @@ Res<object, Error> object::from(const std::string & path,
             clear_env(env);
             std::exit(-1);
         }
+        // unreachable code
+        return _Result(Error(""));
     } else {
         // cgi_receiver and cgi_sender will automatically 
         // close when destructors are called

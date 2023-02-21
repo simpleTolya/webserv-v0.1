@@ -28,9 +28,8 @@ public:
     _low_level_listener() {
         _kqueue = kqueue();
         if (_kqueue == -1) {
-            // TODO
-            std::cerr << "Create kqueue" << std::endl;
-            std::terminate();
+            throw std::logic_error(
+                std::string("kqueue create: ") + strerror(errno));
         }
     }
 
@@ -56,9 +55,8 @@ public:
         int e_code = kevent(_kqueue, &k_ev, 1, NULL, 0, NULL);
         
         if (e_code) {
-            std::cerr << "Add event" << std::endl;
-            std::terminate();
-            // throw std::logic_error(strerror(errno));
+            throw std::logic_error(
+                std::string("kqueue add event: ") + strerror(errno));
         }
     }
 
@@ -69,18 +67,16 @@ public:
         int e_code = kevent(_kqueue, &k_ev, 1, NULL, 0, NULL);
         
         if (e_code < 0) {
-            // TODO
-            std::cerr << "Del event" << std::endl;
-            std::terminate();
+            throw std::logic_error(
+                std::string("kqueue del event: ") + strerror(errno));
         }
     }
 
     void block(std::vector<_event> & events) {
         int fd_cnt = kevent(_Kqueue, NULL, 0, k_evs, KQUEUE_SIZE, INFINITELY);
         if (fd_cnt == -1) {
-            // TODO
-            std::cerr << "block event" << std::endl;
-            std::terminate();
+            throw std::logic_error(
+                std::string("kqueue block: ") + strerror(errno));
         }
 
         for (int i = 0; i < fd_cnt; ++i) {

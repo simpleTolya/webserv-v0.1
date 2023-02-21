@@ -107,6 +107,9 @@ Future<Result<size_t>>  write_entity(std::shared_ptr<W> writer,
     case ft::io::State::READY:
         return futures::from_val(_Result(sended));
     }
+
+    throw std::logic_error(
+            "FutWrite::write_entity: not matching ft::io::State");
 }
 
 } // namespace fut

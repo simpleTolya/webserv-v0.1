@@ -7,31 +7,23 @@
 
 namespace ft {
 
-// TODO сделать мьютекс статическим в классе
-
 struct cout_wrapper : public std::ostringstream {
 private:
-    static std::recursive_mutex & get_lock() {
-        static std::recursive_mutex lock_cout;
-        return lock_cout;
-    }
+    static std::recursive_mutex lock_cout;
 public:
     ~cout_wrapper() {
-        std::lock_guard lock(get_lock());
+        std::lock_guard lock(lock_cout);
         std::cout << this->str();
     }
 };
 
 struct cerr_wrapper : public std::ostringstream {
 private:
-    static std::recursive_mutex & get_lock() {
-        static std::recursive_mutex lock_cout;
-        return lock_cout;
-    }
+    static std::recursive_mutex lock_cerr;
 public:
     ~cerr_wrapper() {
-        std::lock_guard lock(get_lock());
-        std::cout << this->str();
+        std::lock_guard lock(lock_cerr);
+        std::clog << this->str();
     }
 };
 
