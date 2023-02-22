@@ -23,7 +23,7 @@ class _low_level_listener {
     int _kqueue;
     struct kevent k_evs[KQUEUE_SIZE];
 
-    static constexpr int INFINITELY = -1; 
+    static constexpr timespec* INFINITELY = NULL; 
 public:
     _low_level_listener() {
         _kqueue = kqueue();
@@ -73,7 +73,7 @@ public:
     }
 
     void block(std::vector<_event> & events) {
-        int fd_cnt = kevent(_Kqueue, NULL, 0, k_evs, KQUEUE_SIZE, INFINITELY);
+        int fd_cnt = kevent(_kqueue, NULL, 0, k_evs, KQUEUE_SIZE, INFINITELY);
         if (fd_cnt == -1) {
             throw std::logic_error(
                 std::string("kqueue block: ") + strerror(errno));
@@ -95,8 +95,8 @@ public:
 
 
     ~_low_level_listener() {
-        if (_epfd != 0)
-            close(_epfd);
+        if (_kqueue != 0)
+            close(_kqueue);
     }
 };
 
