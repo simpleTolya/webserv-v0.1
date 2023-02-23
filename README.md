@@ -35,7 +35,7 @@ and build with the help of EntityCreator and EntitySerializer futures from entit
 
 - HttpConnection - http client absraction on server-side;
 \- a wrapper over a socket, with methods for receiving a request (future) and sending a response
-- HttpConnection - http client absraction on client-side
+- HttpCLient - http client absraction on client-side
 \- a wrapper over a socket, with methods for sending request and receiving a response (future)
 - HttpServer - http server absraction;
 \- a wrapper over a socket, with method for accepting new connection
